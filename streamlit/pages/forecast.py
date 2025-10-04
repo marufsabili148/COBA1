@@ -162,19 +162,19 @@ with col_week:
 st.markdown('</div>', unsafe_allow_html=True)
 
 # === MAPPING CSV FILES (RELATIVE PATH) ===
-# Mendapatkan direktori dari file Python yang sedang dijalankan
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# Karena file ini ada di streamlit/pages/, naik 2 level ke root project
-PROJECT_ROOT = os.path.dirname(os.path.dirname(BASE_DIR))
+# Naik 1 level dari pages/ ke streamlit/
+PROJECT_ROOT = os.path.dirname(BASE_DIR)
 
-# CSV ada di folder "csv" di root project
+# CSV ada di dalam streamlit/csv
 csv_files = {
     1: os.path.join(PROJECT_ROOT, "csv", "fish_potential_variant_1.csv"),
     2: os.path.join(PROJECT_ROOT, "csv", "fish_potential_variant_2.csv"), 
     3: os.path.join(PROJECT_ROOT, "csv", "fish_potential_variant_3.csv"),
     4: os.path.join(PROJECT_ROOT, "csv", "fish_potential_variant_4.csv")
 }
+
 
 # Informasi periode
 week_dates = []
@@ -523,3 +523,4 @@ with st.expander("📖 Panduan Penggunaan"):
     - Pastikan file CSV berada di folder `data/` 
     - Struktur: `project_root/data/fish_potential_variant_X.csv`
     """)
+
