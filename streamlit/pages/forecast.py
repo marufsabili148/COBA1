@@ -163,22 +163,22 @@ st.markdown('</div>', unsafe_allow_html=True)
 
 # === MAPPING CSV FILES ===
 # OPTION 1: Absolute path (sesuaikan dengan lokasi file Anda)
-csv_files = {
-    1: r"C:\Users\MSI GF\Downloads\fish_potential_variant_1.csv",
-    2: r"C:\Users\MSI GF\Downloads\fish_potential_variant_2.csv", 
-    3: r"C:\Users\MSI GF\Downloads\fish_potential_variant_3.csv",
-    4: r"C:\Users\MSI GF\Downloads\fish_potential_variant_4.csv"
-}
+#csv_files = {
+   # 1: r"C:\Users\MSI GF\Downloads\fish_potential_variant_1.csv",
+  #  2: r"C:\Users\MSI GF\Downloads\fish_potential_variant_2.csv", 
+ #   3: r"C:\Users\MSI GF\Downloads\fish_potential_variant_3.csv",
+#    4: r"C:\Users\MSI GF\Downloads\fish_potential_variant_4.csv"
+#}
 
-# OPTION 2: Relative path dari root project (uncomment jika struktur folder berbeda)
-# import os
-# BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-# csv_files = {
-#     1: os.path.join(BASE_DIR, "csv", "fish_potential_variant_1.csv"),
-#     2: os.path.join(BASE_DIR, "csv", "fish_potential_variant_2.csv"),
-#     3: os.path.join(BASE_DIR, "csv", "fish_potential_variant_3.csv"),
-#     4: os.path.join(BASE_DIR, "csv", "fish_potential_variant_4.csv")
-# }
+ OPTION 2: Relative path dari root project (uncomment jika struktur folder berbeda)
+ import os
+ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ csv_files = {
+     1: os.path.join(BASE_DIR, "csv", "fish_potential_variant_1.csv"),
+     2: os.path.join(BASE_DIR, "csv", "fish_potential_variant_2.csv"),
+     3: os.path.join(BASE_DIR, "csv", "fish_potential_variant_3.csv"),
+     4: os.path.join(BASE_DIR, "csv", "fish_potential_variant_4.csv")
+}
 
 # Informasi periode
 week_dates = []
@@ -519,4 +519,5 @@ with st.expander("📖 Panduan Penggunaan"):
     - Marker Biru: Potensi ikan
     - Marker Merah: Zona bahaya
     - Garis Cyan: Rute navigasi
+
     """)
