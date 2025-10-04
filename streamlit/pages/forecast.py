@@ -17,13 +17,17 @@ st.set_page_config(
     initial_sidebar_state="auto"
 )
 
-# === CUSTOM CSS ===
+# === CUSTOM CSS - RESPONSIVE & INTER FONT ===
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
     
     * {
-        font-family: 'Inter', sans-serif;
+        font-family: 'Inter', sans-serif !important;
+    }
+    
+    html, body, [class*="css"] {
+        font-family: 'Inter', sans-serif !important;
     }
     
     #MainMenu {visibility: hidden;}
@@ -31,54 +35,199 @@ st.markdown("""
     
     .block-container {
         padding-top: 1rem;
-        max-width: 100%;
         padding-left: 1rem;
         padding-right: 1rem;
+        max-width: 100%;
     }
     
     .main .block-container {
         max-width: 100%;
+        padding-bottom: 2rem;
+    }
+    
+    /* Responsive Typography */
+    h1 {
+        font-size: clamp(1.5rem, 4vw, 2.5rem) !important;
+        font-weight: 700 !important;
+        font-family: 'Inter', sans-serif !important;
+        line-height: 1.2 !important;
+        margin-bottom: 1rem !important;
+    }
+    
+    h2 {
+        font-size: clamp(1.2rem, 3vw, 1.8rem) !important;
+        font-weight: 600 !important;
+        font-family: 'Inter', sans-serif !important;
+    }
+    
+    h3 {
+        font-size: clamp(1rem, 2.5vw, 1.3rem) !important;
+        font-weight: 600 !important;
+        font-family: 'Inter', sans-serif !important;
+    }
+    
+    p, div, span, label {
+        font-family: 'Inter', sans-serif !important;
+        font-size: clamp(0.875rem, 2vw, 1rem) !important;
     }
     
     .week-selector {
         background-color: #f0f8ff;
-        padding: 1rem;
-        border-radius: 10px;
+        padding: clamp(0.75rem, 2vw, 1rem);
+        border-radius: 8px;
         margin-bottom: 1rem;
         border-left: 4px solid #0e4194;
     }
     
     .section-header {
-        font-size: 1.8rem;
-        font-weight: 600;
+        font-size: clamp(1.2rem, 3vw, 1.8rem) !important;
+        font-weight: 600 !important;
         color: #24292e;
-        margin: 2rem 0 1rem 0;
+        margin: 1.5rem 0 1rem 0;
         padding-bottom: 0.5rem;
         border-bottom: 2px solid #0e4194;
+        font-family: 'Inter', sans-serif !important;
     }
     
     .info-box {
         background: #f6f8fa;
         border-left: 4px solid #0e4194;
-        padding: 1.5rem;
-        margin: 1.5rem 0;
+        padding: clamp(0.75rem, 2vw, 1.5rem);
+        margin: 1rem 0;
         border-radius: 4px;
+        font-size: clamp(0.8rem, 2vw, 0.95rem) !important;
     }
     
     .stButton > button {
         background-color: #0e4194;
         color: white;
         border: none;
-        padding: 0.75rem 2rem;
-        font-size: 1rem;
+        padding: clamp(0.5rem, 2vw, 0.75rem) clamp(1rem, 3vw, 2rem);
+        font-size: clamp(0.875rem, 2vw, 1rem) !important;
         font-weight: 500;
         border-radius: 4px;
         transition: all 0.2s ease;
+        width: 100%;
+        font-family: 'Inter', sans-serif !important;
     }
     
     .stButton > button:hover {
         background-color: #0a3275;
         box-shadow: 0 4px 8px rgba(14, 65, 148, 0.2);
+    }
+    
+    /* Responsive Columns */
+    [data-testid="column"] {
+        padding: 0.25rem !important;
+    }
+    
+    /* Responsive Select/Input */
+    .stSelectbox, .stNumberInput {
+        font-size: clamp(0.875rem, 2vw, 1rem) !important;
+    }
+    
+    .stSelectbox > div > div {
+        font-size: clamp(0.875rem, 2vw, 1rem) !important;
+    }
+    
+    /* Responsive Metrics */
+    [data-testid="stMetricValue"] {
+        font-size: clamp(1rem, 3vw, 1.5rem) !important;
+        font-family: 'Inter', sans-serif !important;
+        font-weight: 600 !important;
+    }
+    
+    [data-testid="stMetricLabel"] {
+        font-size: clamp(0.75rem, 2vw, 0.875rem) !important;
+        font-family: 'Inter', sans-serif !important;
+    }
+    
+    /* Responsive Tabs */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 0.25rem;
+        overflow-x: auto;
+    }
+    
+    .stTabs [data-baseweb="tab"] {
+        font-size: clamp(0.75rem, 2vw, 0.95rem) !important;
+        padding: clamp(0.5rem, 2vw, 0.75rem) clamp(0.5rem, 2vw, 1rem) !important;
+        white-space: nowrap;
+        font-family: 'Inter', sans-serif !important;
+    }
+    
+    /* Responsive Sidebar */
+    .css-1d391kg, [data-testid="stSidebar"] {
+        padding: 1rem 0.5rem;
+    }
+    
+    .css-1d391kg .stNumberInput label,
+    .css-1d391kg .stSelectbox label,
+    [data-testid="stSidebar"] label {
+        font-size: clamp(0.8rem, 2vw, 0.95rem) !important;
+        font-family: 'Inter', sans-serif !important;
+    }
+    
+    /* Responsive Checkbox */
+    .stCheckbox {
+        font-size: clamp(0.8rem, 2vw, 0.95rem) !important;
+    }
+    
+    .stCheckbox label {
+        font-family: 'Inter', sans-serif !important;
+    }
+    
+    /* Responsive Info/Warning/Success boxes */
+    .stAlert {
+        font-size: clamp(0.8rem, 2vw, 0.95rem) !important;
+        padding: clamp(0.5rem, 2vw, 1rem) !important;
+    }
+    
+    /* Mobile Optimization */
+    @media (max-width: 768px) {
+        .block-container {
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+        }
+        
+        [data-testid="column"] {
+            min-width: 100% !important;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stButton > button {
+            font-size: 0.875rem !important;
+            padding: 0.6rem 1rem;
+        }
+        
+        .week-selector {
+            padding: 0.75rem;
+        }
+        
+        /* Stack columns on mobile */
+        .row-widget.stHorizontal {
+            flex-direction: column;
+        }
+    }
+    
+    /* Extra Small Devices */
+    @media (max-width: 480px) {
+        h1 {
+            font-size: 1.3rem !important;
+        }
+        
+        .section-header {
+            font-size: 1.1rem !important;
+        }
+        
+        [data-testid="stMetricValue"] {
+            font-size: 1.2rem !important;
+        }
+    }
+    
+    /* Option Menu Responsive */
+    .nav-link {
+        font-family: 'Inter', sans-serif !important;
+        font-size: clamp(0.8rem, 2vw, 0.95rem) !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -87,27 +236,35 @@ st.markdown("""
 if 'current_page' not in st.session_state:
     st.session_state.current_page = 'Prediksi 30 Hari'
 
-# === NAVIGATION MENU (FIXED) ===
+# === NAVIGATION MENU (RESPONSIVE) ===
 selected = option_menu(
     menu_title=None,
     options=["Beranda", "Deteksi Zona Ikan", "Prediksi 30 Hari", "Tutorial", "Tentang"],
     icons=["house", "map", "graph-up", "book", "info-circle"],
     menu_icon="cast",
-    default_index=2,  # Index 2 = Prediksi 30 Hari
+    default_index=2,
     orientation="horizontal",
-    key="main_menu",  # Tambahkan key unik
+    key="main_menu",
     styles={
-        "container": {"padding": "0", "background-color": "#ffffff", "border-bottom": "1px solid #e1e4e8"},
-        "icon": {"color": "#586069", "font-size": "16px"},
+        "container": {
+            "padding": "0", 
+            "background-color": "#ffffff", 
+            "border-bottom": "1px solid #e1e4e8"
+        },
+        "icon": {
+            "color": "#586069", 
+            "font-size": "clamp(14px, 3vw, 16px)"
+        },
         "nav-link": {
-            "font-size": "15px",
+            "font-size": "clamp(0.75rem, 2vw, 0.95rem)",
             "text-align": "center",
             "margin": "0",
-            "padding": "14px 24px",
+            "padding": "clamp(10px, 2vw, 14px) clamp(12px, 3vw, 24px)",
             "color": "#24292e",
             "font-weight": "500",
             "border-bottom": "3px solid transparent",
             "--hover-color": "#f6f8fa",
+            "font-family": "Inter, sans-serif",
         },
         "nav-link-selected": {
             "background-color": "transparent",
@@ -117,7 +274,7 @@ selected = option_menu(
     }
 )
 
-# FIXED: Handle navigation dengan benar untuk semua halaman
+# Handle navigation
 if selected != st.session_state.current_page:
     st.session_state.current_page = selected
     
@@ -126,13 +283,12 @@ if selected != st.session_state.current_page:
     elif selected == "Deteksi Zona Ikan":
         st.switch_page("pages/hasil_deteksi.py")
     elif selected == "Tutorial":
-        st.switch_page("pages/tutorial.py")  # Jika ada
+        st.switch_page("pages/tutorial.py")
     elif selected == "Tentang":
-        st.switch_page("pages/tentang.py")  # Jika ada
-    # Untuk "Prediksi 30 Hari" tidak perlu switch karena sudah di halaman ini
+        st.switch_page("pages/tentang.py")
 
 # === JUDUL HALAMAN ===
-st.title("🌊 Peta Potensi Ikan & Zona Bahaya - Prediksi Mingguan")
+st.title("🌊 Peta Potensi Ikan & Zona Bahaya")
 
 # === PILIH BULAN DAN MINGGU ===
 current_date = datetime.now()
@@ -140,7 +296,7 @@ current_month = current_date.month
 current_year = current_date.year
 
 st.markdown('<div class="week-selector">', unsafe_allow_html=True)
-col_month, col_week = st.columns([2, 3])
+col_month, col_week = st.columns([1, 1])
 
 with col_month:
     selected_month = st.selectbox(
@@ -153,9 +309,9 @@ with col_month:
 
 with col_week:
     selected_week = st.selectbox(
-        "📊 Pilih Minggu Prediksi",
+        "📊 Pilih Minggu",
         options=[1, 2, 3, 4],
-        format_func=lambda x: f"Minggu ke-{x} ({calendar.month_name[selected_month]})",
+        format_func=lambda x: f"Minggu ke-{x}",
         help="Pilih minggu dalam bulan yang dipilih"
     )
 
@@ -175,7 +331,6 @@ csv_files = {
     4: os.path.join(PROJECT_ROOT, "csv", "fish_potential_variant_4.csv")
 }
 
-
 # Informasi periode
 week_dates = []
 for week in range(1, 5):
@@ -185,22 +340,19 @@ for week in range(1, 5):
                            calendar.monthrange(current_year, selected_month)[1]))
     week_dates.append(f"{start_date.strftime('%d')}-{end_date.strftime('%d')} {calendar.month_name[selected_month]}")
 
-st.info(f"📈 **Prediksi untuk:** {week_dates[selected_week-1]} | **Dataset:** fish_potential_variant_{selected_week}.csv")
+st.info(f"📈 **Prediksi:** {week_dates[selected_week-1]} | **Dataset:** variant_{selected_week}.csv")
 
 # === LOAD DATA ===
 try:
     csv_path = csv_files[selected_week]
     df = pd.read_csv(csv_path)
-    st.success(f"✅ Data berhasil dimuat dari variant_{selected_week}.csv")
+    st.success(f"✅ Data berhasil dimuat")
 except FileNotFoundError:
     st.error(f"❌ File tidak ditemukan: {csv_path}")
-    st.info(f"💡 **Pastikan struktur folder benar:**\n\n"
-            f"Lokasi yang dicari: `{csv_path}`\n\n"
-            f"Silakan buat folder `data` di direktori yang sama dengan script ini, "
-            f"kemudian letakkan file CSV di dalamnya.")
+    st.info(f"💡 Pastikan file CSV ada di folder `csv/`")
     st.stop()
 except Exception as e:
-    st.error(f"❌ Error membaca file: {str(e)}")
+    st.error(f"❌ Error: {str(e)}")
     st.stop()
 
 # Validasi kolom
@@ -212,26 +364,26 @@ if not required_cols.issubset(df.columns):
 # Fungsi alasan potensi
 def alasan_potensi(row):
     if "Zona Bahaya" in row['ikan']:
-        return "Lokasi ini terdeteksi berbahaya karena kondisi cuaca/gelombang."
+        return "Zona berbahaya karena kondisi cuaca/gelombang."
     elif row['skor'] > 0.9:
-        return "Sangat potensial: kondisi lingkungan optimal (suhu, plankton, arus)."
+        return "Sangat potensial: kondisi lingkungan optimal."
     elif row['skor'] > 0.75:
-        return "Potensial tinggi: sebagian besar parameter mendukung."
+        return "Potensial tinggi: parameter mendukung."
     elif row['skor'] > 0.5:
-        return "Potensial sedang: hanya sebagian parameter sesuai."
+        return "Potensial sedang."
     else:
-        return "Potensial rendah: sedikit parameter yang mendukung."
+        return "Potensial rendah."
 
 df['alasan'] = df.apply(alasan_potensi, axis=1)
 df_filtered = df[df['skor'] > 0.4].copy()
 
 # === SIDEBAR CONTROLS ===
-st.sidebar.header("🔍 Navigasi Laut")
+st.sidebar.header("🔍 Navigasi")
 
 basemap_option = st.sidebar.selectbox(
-    "Pilih Basemap",
+    "Basemap",
     ["OpenStreetMap", "Esri Satellite"],
-    help="Pilih jenis peta dasar yang ingin digunakan"
+    help="Pilih jenis peta dasar"
 )
 
 # GPS Detection
@@ -239,81 +391,86 @@ loc = get_geolocation()
 if loc is not None and "coords" in loc:
     default_start_lat = loc["coords"]["latitude"]
     default_start_lon = loc["coords"]["longitude"]
-    st.sidebar.success("📍 GPS berhasil dideteksi!")
+    st.sidebar.success("📍 GPS terdeteksi!")
 else:
     default_start_lat = df_filtered.lat.mean()
     default_start_lon = df_filtered.lon.mean()
-    st.sidebar.warning("⚠️ GPS tidak terdeteksi, menggunakan koordinat default")
+    st.sidebar.warning("⚠️ GPS tidak terdeteksi")
 
 # Input koordinat
-st.sidebar.subheader("📍 Koordinat Posisi Awal")
+st.sidebar.subheader("📍 Posisi Awal")
 start_lat = st.sidebar.number_input(
-    "Latitude Awal", 
+    "Latitude", 
     value=float(default_start_lat), 
     format="%.6f",
-    help="Koordinat latitude posisi Anda saat ini"
+    key="start_lat"
 )
 start_lon = st.sidebar.number_input(
-    "Longitude Awal", 
+    "Longitude", 
     value=float(default_start_lon), 
     format="%.6f",
-    help="Koordinat longitude posisi Anda saat ini"
+    key="start_lon"
 )
 
-st.sidebar.subheader("🎯 Koordinat Tujuan")
+st.sidebar.subheader("🎯 Tujuan")
 end_lat = st.sidebar.number_input(
-    "Latitude Tujuan", 
+    "Latitude", 
     value=float(df_filtered.lat.mean()), 
     format="%.6f",
-    help="Koordinat latitude tempat tujuan"
+    key="end_lat"
 )
 end_lon = st.sidebar.number_input(
-    "Longitude Tujuan", 
+    "Longitude", 
     value=float(df_filtered.lon.mean()), 
     format="%.6f",
-    help="Koordinat longitude tempat tujuan"
+    key="end_lon"
 )
 
 if st.sidebar.button("🔄 Refresh GPS"):
     st.rerun()
 
-# === KONTROL LAYER ===
+# === KONTROL LAYER (RESPONSIVE) ===
 st.markdown('<h2 class="section-header">🗺️ Peta Interaktif</h2>', unsafe_allow_html=True)
-st.subheader("🎛️ Kontrol Layer")
 
-col1, col2, col3 = st.columns(3)
-
-# Heatmap controls
-with col1:
+# Mobile-friendly: Use expander for controls on small screens
+with st.expander("🎛️ Kontrol Layer", expanded=True):
+    # Heatmap controls
     st.markdown("**🔥 Heatmap**")
     ikan_types = df_filtered['ikan'].unique()
     ikan_types_clean = [ikan for ikan in ikan_types if "Zona Bahaya" not in ikan]
     
     heatmap_toggles = {}
-    for ikan in ikan_types_clean:
-        heatmap_toggles[ikan] = st.checkbox(f"{ikan}", value=True, key=f"heat_{ikan}_{selected_week}")
+    cols_heat = st.columns(2)
+    for idx, ikan in enumerate(ikan_types_clean):
+        with cols_heat[idx % 2]:
+            heatmap_toggles[ikan] = st.checkbox(f"{ikan}", value=True, key=f"heat_{ikan}_{selected_week}")
     
     show_bahaya_heatmap = st.checkbox("🌊 Zona Bahaya", value=True, key=f"heat_bahaya_{selected_week}")
-
-# Marker ikan controls
-with col2:
-    st.markdown("**📍 Marker Ikan**")
-    show_ikan_markers = st.checkbox("Tampilkan Marker Ikan", value=False, key=f"marker_ikan_{selected_week}")
+    
+    st.markdown("---")
+    
+    # Marker controls
+    st.markdown("**📍 Marker**")
+    col_m1, col_m2 = st.columns(2)
+    
+    with col_m1:
+        show_ikan_markers = st.checkbox("Marker Ikan", value=False, key=f"marker_ikan_{selected_week}")
+    
+    with col_m2:
+        show_bahaya_markers = st.checkbox("Marker Bahaya", value=False, key=f"marker_bahaya_{selected_week}")
     
     marker_ikan_toggles = {}
     if show_ikan_markers:
-        for ikan in ikan_types_clean:
-            marker_ikan_toggles[ikan] = st.checkbox(f"• {ikan}", value=True, key=f"marker_{ikan}_{selected_week}")
-
-# Marker bahaya dan rute
-with col3:
-    st.markdown("**🚫 Marker Bahaya**")
-    show_bahaya_markers = st.checkbox("Tampilkan Marker Bahaya", value=False, key=f"marker_bahaya_{selected_week}")
+        cols_marker = st.columns(2)
+        for idx, ikan in enumerate(ikan_types_clean):
+            with cols_marker[idx % 2]:
+                marker_ikan_toggles[ikan] = st.checkbox(f"• {ikan}", value=True, key=f"marker_{ikan}_{selected_week}")
     
+    st.markdown("---")
     st.markdown("**🧭 Rute**")
     show_route = st.checkbox("Tampilkan Rute", value=True, key=f"show_route_{selected_week}")
 
-# === GENERATE MAP ===
+# === GENERATE MAP (RESPONSIVE SIZE) ===
 if basemap_option == "Esri Satellite":
     tiles_url = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
     attr = "Tiles &copy; Esri"
@@ -362,16 +519,18 @@ if show_ikan_markers:
             subdf = df_filtered[df_filtered['ikan'] == ikan]
             for _, row in subdf.iterrows():
                 popup_html = f"""
+                <div style="font-family: Inter, sans-serif; font-size: 13px;">
                 <b>Periode:</b> {week_dates[selected_week-1]}<br>
                 <b>Jenis Ikan:</b> {row['ikan']}<br>
-                <b>Latitude:</b> {row['lat']:.4f}<br>
-                <b>Longitude:</b> {row['lon']:.4f}<br>
-                <b>Skor Potensi:</b> {row['skor']:.4f}<br>
+                <b>Lat:</b> {row['lat']:.4f}<br>
+                <b>Lon:</b> {row['lon']:.4f}<br>
+                <b>Skor:</b> {row['skor']:.4f}<br>
                 <b>Alasan:</b> {row['alasan']}
+                </div>
                 """
                 folium.Marker(
                     location=[row['lat'], row['lon']],
-                    popup=folium.Popup(popup_html, max_width=320),
+                    popup=folium.Popup(popup_html, max_width=280),
                     icon=folium.Icon(color="blue", icon="info-sign")
                 ).add_to(m)
 
@@ -380,23 +539,25 @@ if show_bahaya_markers:
     bahaya_df = df_filtered[df_filtered['ikan'].str.contains("Zona Bahaya", case=False, na=False)]
     for _, row in bahaya_df.iterrows():
         popup_html = f"""
+        <div style="font-family: Inter, sans-serif; font-size: 13px;">
         <b>Periode:</b> {week_dates[selected_week-1]}<br>
         <b>Jenis:</b> {row['ikan']}<br>
-        <b>Latitude:</b> {row['lat']:.4f}<br>
-        <b>Longitude:</b> {row['lon']:.4f}<br>
+        <b>Lat:</b> {row['lat']:.4f}<br>
+        <b>Lon:</b> {row['lon']:.4f}<br>
         <b>Skor:</b> {row['skor']:.4f}<br>
-        <b>Keterangan:</b> {row['alasan']}
+        <b>Info:</b> {row['alasan']}
+        </div>
         """
         folium.Marker(
             location=[row['lat'], row['lon']],
-            popup=folium.Popup(popup_html, max_width=320),
+            popup=folium.Popup(popup_html, max_width=280),
             icon=folium.Icon(color="red", icon="warning-sign")
         ).add_to(m)
 
 # Rute
 if show_route:
-    folium.Marker([start_lat, start_lon], popup="📍 Titik Awal", icon=folium.Icon(color="green", icon="play")).add_to(m)
-    folium.Marker([end_lat, end_lon], popup="🎯 Titik Tujuan", icon=folium.Icon(color="blue", icon="flag")).add_to(m)
+    folium.Marker([start_lat, start_lon], popup="📍 Awal", icon=folium.Icon(color="green", icon="play")).add_to(m)
+    folium.Marker([end_lat, end_lon], popup="🎯 Tujuan", icon=folium.Icon(color="blue", icon="flag")).add_to(m)
     folium.PolyLine(
         locations=[[start_lat, start_lon], [end_lat, end_lon]],
         color="cyan",
@@ -405,20 +566,18 @@ if show_route:
         dash_array="10"
     ).add_to(m)
 
-# Tampilkan peta
-st_data = st_folium(m, width=1200, height=600, key=f"map_{selected_month}_{selected_week}")
+# Tampilkan peta dengan ukuran responsif
+st_data = st_folium(m, width=None, height=500, key=f"map_{selected_month}_{selected_week}", returned_objects=[])
 
-# === INFO PANEL ===
+# === INFO PANEL (RESPONSIVE) ===
 st.markdown("---")
-col_info1, col_info2 = st.columns(2)
 
-with col_info1:
-    st.subheader("ℹ️ Informasi Koordinat")
+with st.expander("ℹ️ Informasi Koordinat", expanded=False):
     distance_km = ((end_lat-start_lat)**2 + (end_lon-start_lon)**2)**0.5 * 111
     st.info(f"""
-    **Periode Prediksi:** {week_dates[selected_week-1]}
+    **Periode:** {week_dates[selected_week-1]}
     
-    **Dataset:** fish_potential_variant_{selected_week}.csv
+    **Dataset:** variant_{selected_week}.csv
     
     **Basemap:** {basemap_option}
     
@@ -426,25 +585,29 @@ with col_info1:
     
     **Tujuan:** {end_lat:.6f}, {end_lon:.6f}
     
-    **Jarak Estimasi:** ≈ {distance_km:.1f} km
+    **Jarak:** ≈ {distance_km:.1f} km
     """)
 
-with col_info2:
-    st.subheader("📊 Status Layer Aktif")
-    
-    active_heatmaps = sum([1 for v in heatmap_toggles.values() if v]) + (1 if show_bahaya_heatmap else 0)
-    active_markers_ikan = sum([1 for v in marker_ikan_toggles.values() if v]) if show_ikan_markers else 0
-    active_markers_bahaya = 1 if show_bahaya_markers else 0
-    
-    st.metric("🔥 Heatmap Aktif", active_heatmaps)
-    st.metric("📍 Marker Ikan Aktif", active_markers_ikan)
-    st.metric("🚫 Marker Bahaya Aktif", active_markers_bahaya)
-    st.metric("🧭 Rute", "Aktif" if show_route else "Nonaktif")
+# === DATA SUMMARY (RESPONSIVE GRID) ===
+st.markdown('<h2 class="section-header">📈 Ringkasan Data</h2>', unsafe_allow_html=True)
 
-# === PERBANDINGAN MINGGU ===
-st.markdown('<h2 class="section-header">📊 Perbandingan Prediksi Mingguan</h2>', unsafe_allow_html=True)
+col1, col2 = st.columns(2)
 
-tab1, tab2, tab3, tab4 = st.tabs([f"📅 Minggu ke-{i}" for i in range(1, 5)])
+with col1:
+    st.metric("Total Data", len(df_filtered))
+    total_bahaya = len(df_filtered[df_filtered['ikan'].str.contains("Zona Bahaya", case=False, na=False)])
+    st.metric("Zona Bahaya", total_bahaya)
+
+with col2:
+    total_ikan = len(df_filtered[~df_filtered['ikan'].str.contains("Zona Bahaya", case=False, na=False)])
+    st.metric("Potensi Ikan", total_ikan)
+    avg_score = df_filtered['skor'].mean()
+    st.metric("Rata-rata Skor", f"{avg_score:.3f}")
+
+# === PERBANDINGAN MINGGU (COMPACT) ===
+st.markdown('<h2 class="section-header">📊 Perbandingan Mingguan</h2>', unsafe_allow_html=True)
+
+tab1, tab2, tab3, tab4 = st.tabs([f"W{i}" for i in range(1, 5)])
 
 tabs = [tab1, tab2, tab3, tab4]
 for i, tab in enumerate(tabs, 1):
@@ -454,73 +617,37 @@ for i, tab in enumerate(tabs, 1):
             if required_cols.issubset(df_week.columns):
                 df_week_filtered = df_week[df_week['skor'] > 0.4]
                 
-                col_stat1, col_stat2, col_stat3 = st.columns(3)
-                with col_stat1:
-                    st.metric("Total Titik Data", len(df_week_filtered))
-                with col_stat2:
-                    total_ikan = len(df_week_filtered[~df_week_filtered['ikan'].str.contains("Zona Bahaya", case=False, na=False)])
-                    st.metric("Titik Potensi Ikan", total_ikan)
-                with col_stat3:
-                    avg_score = df_week_filtered['skor'].mean()
-                    st.metric("Rata-rata Skor", f"{avg_score:.3f}")
+                c1, c2 = st.columns(2)
+                with c1:
+                    st.metric("Total", len(df_week_filtered))
+                with c2:
+                    avg = df_week_filtered['skor'].mean()
+                    st.metric("Avg", f"{avg:.3f}")
                 
                 if i == selected_week:
-                    st.success(f"✅ Sedang menampilkan minggu ke-{i}")
+                    st.success(f"✅ Minggu ke-{i}")
             else:
-                st.error(f"❌ File minggu ke-{i} tidak memiliki kolom yang sesuai")
+                st.error(f"❌ File tidak sesuai")
                 
         except FileNotFoundError:
-            st.error(f"❌ File variant_{i}.csv tidak ditemukan")
+            st.error(f"❌ File tidak ada")
         except Exception as e:
-            st.error(f"❌ Error membaca file minggu ke-{i}: {str(e)}")
-
-# === DATA SUMMARY ===
-st.markdown('<h2 class="section-header">📈 Ringkasan Data</h2>', unsafe_allow_html=True)
-
-col_stat1, col_stat2, col_stat3, col_stat4 = st.columns(4)
-
-with col_stat1:
-    st.metric("Total Titik Data", len(df_filtered))
-
-with col_stat2:
-    total_ikan = len(df_filtered[~df_filtered['ikan'].str.contains("Zona Bahaya", case=False, na=False)])
-    st.metric("Titik Potensi Ikan", total_ikan)
-
-with col_stat3:
-    total_bahaya = len(df_filtered[df_filtered['ikan'].str.contains("Zona Bahaya", case=False, na=False)])
-    st.metric("Zona Bahaya", total_bahaya)
-
-with col_stat4:
-    avg_score = df_filtered['skor'].mean()
-    st.metric("Rata-rata Skor", f"{avg_score:.3f}")
+            st.error(f"❌ Error: {str(e)}")
 
 # === PANDUAN ===
-with st.expander("📖 Panduan Penggunaan"):
+with st.expander("📖 Panduan"):
     st.markdown("""
-    ### Cara Menggunakan Aplikasi:
+    ### Cara Menggunakan:
     
-    **1. Pemilihan Periode:**
-    - Pilih bulan dan minggu yang ingin dilihat
-    - Sistem akan memuat data dari CSV yang sesuai
+    **1. Pilih Periode** - Bulan dan minggu
     
-    **2. Navigasi:**
-    - Gunakan menu di atas untuk berpindah halaman
-    - Input koordinat awal dan tujuan di sidebar
-    - Klik "Refresh GPS" untuk update lokasi
+    **2. Kontrol Layer** - Toggle heatmap dan marker
     
-    **3. Kontrol Layer:**
-    - Default: Heatmap aktif, marker nonaktif
-    - Toggle checkbox untuk mengaktifkan/menonaktifkan layer
-    - Setiap jenis ikan dapat dikontrol terpisah
+    **3. Navigasi** - Input koordinat di sidebar
     
     **4. Interpretasi:**
     - Heatmap: Biru (rendah) → Merah (tinggi)
     - Marker Biru: Potensi ikan
     - Marker Merah: Zona bahaya
-    - Garis Cyan: Rute navigasi
-    
-    **5. Struktur Folder:**
-    - Pastikan file CSV berada di folder `data/` 
-    - Struktur: `project_root/data/fish_potential_variant_X.csv`
+    - Garis Cyan: Rute
     """)
-
