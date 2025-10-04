@@ -10,14 +10,18 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# === CUSTOM CSS - COPERNICUS STYLE ===
+# === CUSTOM CSS - RESPONSIVE & INTER FONT ===
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
     
-    /* Global Reset */
+    /* Global Reset with Inter Font */
     * {
-        font-family: 'Inter', sans-serif;
+        font-family: 'Inter', sans-serif !important;
+    }
+    
+    html, body, [class*="css"] {
+        font-family: 'Inter', sans-serif !important;
     }
     
     #MainMenu {visibility: hidden;}
@@ -25,21 +29,23 @@ st.markdown("""
     header {visibility: hidden;}
     
     .block-container {
-        padding-top: 2rem;
-        padding-bottom: 2rem;
+        padding-top: clamp(1rem, 3vw, 2rem);
+        padding-bottom: clamp(1rem, 3vw, 2rem);
+        padding-left: clamp(0.5rem, 2vw, 1rem);
+        padding-right: clamp(0.5rem, 2vw, 1rem);
         max-width: 1400px;
     }
     
-    /* Navigation Bar - Copernicus Style */
+    /* Navigation Bar - Responsive */
     .stApp > header {
         background-color: transparent;
     }
     
-    /* Hero Section - Clean and Minimal */
+    /* Hero Section - Responsive */
     .hero-container {
         background: linear-gradient(180deg, #f8f9fa 0%, #ffffff 100%);
-        padding: 4rem 0 3rem 0;
-        margin: -2rem -6rem 3rem -6rem;
+        padding: clamp(2rem, 5vw, 4rem) clamp(1rem, 3vw, 2rem) clamp(1.5rem, 4vw, 3rem);
+        margin: -1rem -1rem 2rem -1rem;
         border-bottom: 1px solid #e1e4e8;
     }
     
@@ -47,35 +53,45 @@ st.markdown("""
         max-width: 900px;
         margin: 0 auto;
         text-align: center;
-        padding: 0 2rem;
+        padding: 0 1rem;
     }
     
     .hero-title {
-        font-size: 3rem;
-        font-weight: 600;
+        font-size: clamp(2rem, 6vw, 3rem) !important;
+        font-weight: 600 !important;
         color: #0e4194;
         margin-bottom: 1rem;
         line-height: 1.2;
+        font-family: 'Inter', sans-serif !important;
     }
     
     .hero-subtitle {
-        font-size: 1.25rem;
+        font-size: clamp(1rem, 3vw, 1.25rem) !important;
         color: #586069;
         font-weight: 400;
         line-height: 1.6;
-        margin-bottom: 2rem;
+        margin-bottom: 1.5rem;
+        font-family: 'Inter', sans-serif !important;
     }
     
-    /* Buttons - Copernicus Style */
+    .hero-description {
+        color: #586069;
+        font-size: clamp(0.9rem, 2.5vw, 1.05rem) !important;
+        line-height: 1.7;
+        font-family: 'Inter', sans-serif !important;
+    }
+    
+    /* Buttons - Responsive */
     .stButton > button {
         background-color: #0e4194;
         color: white;
         border: none;
-        padding: 0.75rem 2rem;
-        font-size: 1rem;
+        padding: clamp(0.6rem, 2vw, 0.75rem) clamp(1.5rem, 3vw, 2rem);
+        font-size: clamp(0.9rem, 2vw, 1rem) !important;
         font-weight: 500;
         border-radius: 4px;
         transition: all 0.2s ease;
+        font-family: 'Inter', sans-serif !important;
     }
     
     .stButton > button:hover {
@@ -83,19 +99,19 @@ st.markdown("""
         box-shadow: 0 4px 8px rgba(14, 65, 148, 0.2);
     }
     
-    /* Feature Grid - Clean Layout */
+    /* Feature Grid - Responsive */
     .feature-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 2rem;
-        margin: 3rem 0;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+        gap: clamp(1rem, 3vw, 2rem);
+        margin: clamp(1.5rem, 3vw, 3rem) 0;
     }
     
     .feature-box {
         background: white;
         border: 1px solid #e1e4e8;
         border-radius: 8px;
-        padding: 2rem;
+        padding: clamp(1.25rem, 3vw, 2rem);
         transition: all 0.3s ease;
     }
     
@@ -105,97 +121,106 @@ st.markdown("""
     }
     
     .feature-icon {
-        font-size: 2.5rem;
+        font-size: clamp(2rem, 5vw, 2.5rem);
         margin-bottom: 1rem;
         display: block;
     }
     
     .feature-heading {
-        font-size: 1.25rem;
-        font-weight: 600;
+        font-size: clamp(1.05rem, 2.5vw, 1.25rem) !important;
+        font-weight: 600 !important;
         color: #24292e;
         margin-bottom: 0.75rem;
+        font-family: 'Inter', sans-serif !important;
     }
     
     .feature-text {
-        font-size: 0.95rem;
+        font-size: clamp(0.85rem, 2vw, 0.95rem) !important;
         color: #586069;
         line-height: 1.6;
+        font-family: 'Inter', sans-serif !important;
     }
     
-    /* Stats Section */
+    /* Stats Section - Responsive */
     .stats-container {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 2rem;
-        margin: 3rem 0;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+        gap: clamp(1rem, 3vw, 2rem);
+        margin: clamp(1.5rem, 3vw, 3rem) 0;
     }
     
     .stat-card {
         background: white;
         border: 1px solid #e1e4e8;
         border-radius: 8px;
-        padding: 2rem;
+        padding: clamp(1.25rem, 3vw, 2rem);
         text-align: center;
     }
     
     .stat-number {
-        font-size: 2.5rem;
-        font-weight: 700;
+        font-size: clamp(1.8rem, 5vw, 2.5rem) !important;
+        font-weight: 700 !important;
         color: #0e4194;
         display: block;
         margin-bottom: 0.5rem;
+        font-family: 'Inter', sans-serif !important;
     }
     
     .stat-label {
-        font-size: 0.95rem;
+        font-size: clamp(0.8rem, 2vw, 0.95rem) !important;
         color: #586069;
         font-weight: 400;
+        font-family: 'Inter', sans-serif !important;
     }
     
-    /* Section Headers */
+    /* Section Headers - Responsive */
     .section-header {
-        font-size: 2rem;
-        font-weight: 600;
+        font-size: clamp(1.5rem, 4vw, 2rem) !important;
+        font-weight: 600 !important;
         color: #24292e;
-        margin: 3rem 0 1.5rem 0;
+        margin: clamp(2rem, 4vw, 3rem) 0 clamp(1rem, 2vw, 1.5rem) 0;
         padding-bottom: 0.5rem;
         border-bottom: 2px solid #0e4194;
+        font-family: 'Inter', sans-serif !important;
     }
     
-    /* Info Boxes */
+    /* Info Boxes - Responsive */
     .info-box {
         background: #f6f8fa;
         border-left: 4px solid #0e4194;
-        padding: 1.5rem;
-        margin: 1.5rem 0;
+        padding: clamp(1rem, 2.5vw, 1.5rem);
+        margin: clamp(1rem, 2vw, 1.5rem) 0;
         border-radius: 4px;
     }
     
     .info-box-title {
-        font-weight: 600;
+        font-weight: 600 !important;
         color: #24292e;
         margin-bottom: 0.5rem;
+        font-size: clamp(0.95rem, 2vw, 1.1rem) !important;
+        font-family: 'Inter', sans-serif !important;
     }
     
     .info-box-content {
         color: #586069;
         line-height: 1.6;
+        font-size: clamp(0.85rem, 2vw, 0.95rem) !important;
+        font-family: 'Inter', sans-serif !important;
     }
     
-    /* Links Section */
+    /* Links Section - Responsive */
     .links-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 1.5rem;
-        margin: 2rem 0;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+        gap: clamp(1rem, 2vw, 1.5rem);
+        margin: clamp(1.5rem, 3vw, 2rem) 0;
     }
     
     .link-card {
         background: white;
         border: 1px solid #e1e4e8;
         border-radius: 8px;
-        padding: 1.5rem;
+        padding: clamp(1rem, 2.5vw, 1.5rem);
         transition: all 0.2s ease;
     }
     
@@ -205,45 +230,49 @@ st.markdown("""
     }
     
     .link-title {
-        font-weight: 600;
+        font-weight: 600 !important;
         color: #0e4194;
         margin-bottom: 0.5rem;
-        font-size: 1.1rem;
+        font-size: clamp(0.95rem, 2.5vw, 1.1rem) !important;
+        font-family: 'Inter', sans-serif !important;
     }
     
-    /* Footer */
+    /* Footer - Responsive */
     .footer-container {
         background: #24292e;
         color: #ffffff;
-        padding: 3rem 2rem;
-        margin: 4rem -6rem -2rem -6rem;
+        padding: clamp(2rem, 4vw, 3rem) clamp(1rem, 3vw, 2rem);
+        margin: clamp(2rem, 4vw, 4rem) -1rem -2rem -1rem;
     }
     
     .footer-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 2rem;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+        gap: clamp(1.5rem, 3vw, 2rem);
         max-width: 1400px;
         margin: 0 auto;
     }
     
     .footer-heading {
-        font-size: 1.1rem;
-        font-weight: 600;
+        font-size: clamp(1rem, 2.5vw, 1.1rem) !important;
+        font-weight: 600 !important;
         margin-bottom: 1rem;
         color: #ffffff;
+        font-family: 'Inter', sans-serif !important;
     }
     
     .footer-text {
         color: #959da5;
         line-height: 1.6;
-        font-size: 0.9rem;
+        font-size: clamp(0.8rem, 2vw, 0.9rem) !important;
+        font-family: 'Inter', sans-serif !important;
     }
     
     .footer-link {
         color: #959da5;
         text-decoration: none;
         transition: color 0.2s;
+        font-family: 'Inter', sans-serif !important;
     }
     
     .footer-link:hover {
@@ -254,12 +283,72 @@ st.markdown("""
     .streamlit-expanderHeader {
         background-color: #f6f8fa;
         border-radius: 4px;
-        font-weight: 500;
+        font-weight: 500 !important;
+        font-family: 'Inter', sans-serif !important;
     }
     
-    /* Remove emoji styling */
+    /* Typography */
     h1, h2, h3, h4, h5, h6 {
         color: #24292e;
+        font-family: 'Inter', sans-serif !important;
+    }
+    
+    h1 {
+        font-size: clamp(1.5rem, 4vw, 2.5rem) !important;
+    }
+    
+    h2 {
+        font-size: clamp(1.3rem, 3.5vw, 2rem) !important;
+    }
+    
+    h3 {
+        font-size: clamp(1.1rem, 3vw, 1.5rem) !important;
+    }
+    
+    p, div, span, label, a {
+        font-family: 'Inter', sans-serif !important;
+    }
+    
+    /* Option Menu Responsive */
+    .nav-link {
+        font-family: 'Inter', sans-serif !important;
+        font-size: clamp(0.8rem, 2vw, 0.95rem) !important;
+    }
+    
+    /* Mobile Optimization */
+    @media (max-width: 768px) {
+        .hero-container {
+            margin: -0.5rem -0.5rem 1.5rem -0.5rem;
+            padding: 1.5rem 1rem;
+        }
+        
+        .footer-container {
+            margin: 2rem -0.5rem -1rem -0.5rem;
+            padding: 2rem 1rem;
+        }
+        
+        .feature-grid, .stats-container, .links-grid {
+            gap: 1rem;
+        }
+    }
+    
+    /* Extra Small Devices */
+    @media (max-width: 480px) {
+        .hero-title {
+            font-size: 1.8rem !important;
+        }
+        
+        .hero-subtitle {
+            font-size: 0.95rem !important;
+        }
+        
+        .stat-number {
+            font-size: 1.6rem !important;
+        }
+        
+        .feature-icon {
+            font-size: 1.8rem;
+        }
     }
 </style>
 """, unsafe_allow_html=True)
@@ -268,7 +357,7 @@ st.markdown("""
 if 'current_page' not in st.session_state:
     st.session_state.current_page = 'Beranda'
 
-# === NAVIGATION ===
+# === NAVIGATION - RESPONSIVE ===
 selected = option_menu(
     menu_title=None,
     options=["Beranda", "Deteksi Zona Ikan", "Prediksi 30 Hari", "Tutorial", "Tentang"],
@@ -277,17 +366,25 @@ selected = option_menu(
     default_index=["Beranda", "Deteksi Zona Ikan", "Prediksi 30 Hari", "Tutorial", "Tentang"].index(st.session_state.current_page),
     orientation="horizontal",
     styles={
-        "container": {"padding": "0", "background-color": "#ffffff", "border-bottom": "1px solid #e1e4e8"},
-        "icon": {"color": "#586069", "font-size": "16px"},
+        "container": {
+            "padding": "0", 
+            "background-color": "#ffffff", 
+            "border-bottom": "1px solid #e1e4e8"
+        },
+        "icon": {
+            "color": "#586069", 
+            "font-size": "clamp(14px, 3vw, 16px)"
+        },
         "nav-link": {
-            "font-size": "15px",
+            "font-size": "clamp(0.75rem, 2vw, 0.95rem)",
             "text-align": "center",
             "margin": "0",
-            "padding": "14px 24px",
+            "padding": "clamp(10px, 2vw, 14px) clamp(12px, 3vw, 24px)",
             "color": "#24292e",
             "font-weight": "500",
             "border-bottom": "3px solid transparent",
             "--hover-color": "#f6f8fa",
+            "font-family": "Inter, sans-serif",
         },
         "nav-link-selected": {
             "background-color": "transparent",
@@ -313,7 +410,7 @@ if selected == "Beranda":
         <div class="hero-content">
             <h1 class="hero-title">SAILOR</h1>
             <p class="hero-subtitle">Satellite-based AI Intelligent Localization Optimization Resources</p>
-            <p style="color: #586069; font-size: 1.05rem; line-height: 1.7;">
+            <p class="hero-description">
                 A comprehensive fish detection system utilizing satellite data and artificial intelligence 
                 to identify optimal fishing zones in the Java Sea
             </p>
@@ -322,7 +419,7 @@ if selected == "Beranda":
     """, unsafe_allow_html=True)
     
     # CTA Button
-    col1, col2, col3 = st.columns([1, 1, 1])
+    col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
         if st.button("Start Fish Zone Detection", use_container_width=True):
             st.switch_page("pages/hasil_deteksi.py")
@@ -457,7 +554,7 @@ if selected == "Beranda":
             </div>
         </div>
         <hr style="border-color: rgba(255,255,255,0.1); margin: 2rem 0;">
-        <p style="text-align: center; color: #959da5; font-size: 0.9rem;">
+        <p style="text-align: center; color: #959da5; font-size: clamp(0.8rem, 2vw, 0.9rem); font-family: Inter, sans-serif;">
             © 2025 SAILOR - Team Awikwok | Universitas Diponegoro | GEMASTIK XVIII
         </p>
     </div>
@@ -533,6 +630,7 @@ elif selected == "Tutorial":
 elif selected == "Tentang":
     st.markdown('<h1 class="section-header">About SAILOR</h1>', unsafe_allow_html=True)
     
+    # Responsive: Stack on mobile
     col1, col2 = st.columns([2, 1])
     
     with col1:
@@ -589,8 +687,8 @@ elif selected == "Tentang":
         st.markdown("""
         <div class="feature-box" style="text-align: center;">
             <div class="feature-heading">M. Ma'ruf Sabili Riziq</div>
-            <p style="color: #586069;">21120123140123</p>
-            <p style="color: #959da5; font-size: 0.9rem;">Lead Developer</p>
+            <p style="color: #586069; font-family: Inter, sans-serif;">21120123140123</p>
+            <p style="color: #959da5; font-size: clamp(0.8rem, 2vw, 0.9rem); font-family: Inter, sans-serif;">Lead Developer</p>
         </div>
         """, unsafe_allow_html=True)
     
@@ -598,8 +696,8 @@ elif selected == "Tentang":
         st.markdown("""
         <div class="feature-box" style="text-align: center;">
             <div class="feature-heading">Hasna Auliannisa Wahono</div>
-            <p style="color: #586069;">21120123130078</p>
-            <p style="color: #959da5; font-size: 0.9rem;">Data Scientist</p>
+            <p style="color: #586069; font-family: Inter, sans-serif;">21120123130078</p>
+            <p style="color: #959da5; font-size: clamp(0.8rem, 2vw, 0.9rem); font-family: Inter, sans-serif;">Data Scientist</p>
         </div>
         """, unsafe_allow_html=True)
     
@@ -607,8 +705,8 @@ elif selected == "Tentang":
         st.markdown("""
         <div class="feature-box" style="text-align: center;">
             <div class="feature-heading">Nimas Ratri Kirana A.</div>
-            <p style="color: #586069;">26050122120033</p>
-            <p style="color: #959da5; font-size: 0.9rem;">UI/UX Designer</p>
+            <p style="color: #586069; font-family: Inter, sans-serif;">26050122120033</p>
+            <p style="color: #959da5; font-size: clamp(0.8rem, 2vw, 0.9rem); font-family: Inter, sans-serif;">UI/UX Designer</p>
         </div>
         """, unsafe_allow_html=True)
     
