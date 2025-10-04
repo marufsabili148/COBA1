@@ -1,6 +1,6 @@
 streamlit==1.31.0
 pandas==2.1.4
-folium==0.15.1
+folium<0.15
 streamlit-folium==0.16.0
 streamlit-js-eval==0.1.5
 streamlit-option-menu==0.3.12
