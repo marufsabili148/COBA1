@@ -161,23 +161,19 @@ with col_week:
 
 st.markdown('</div>', unsafe_allow_html=True)
 
-# === MAPPING CSV FILES ===
-# OPTION 1: Absolute path (sesuaikan dengan lokasi file Anda)
-#csv_files = {
-   # 1: r"C:\Users\MSI GF\Downloads\fish_potential_variant_1.csv",
-  #  2: r"C:\Users\MSI GF\Downloads\fish_potential_variant_2.csv", 
- #   3: r"C:\Users\MSI GF\Downloads\fish_potential_variant_3.csv",
-#    4: r"C:\Users\MSI GF\Downloads\fish_potential_variant_4.csv"
-#}
+# === MAPPING CSV FILES (RELATIVE PATH) ===
+# Mendapatkan direktori dari file Python yang sedang dijalankan
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
- OPTION 2: Relative path dari root project (uncomment jika struktur folder berbeda)
- import os
- BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
- csv_files = {
-     1: os.path.join(BASE_DIR, "csv", "fish_potential_variant_1.csv"),
-     2: os.path.join(BASE_DIR, "csv", "fish_potential_variant_2.csv"),
-     3: os.path.join(BASE_DIR, "csv", "fish_potential_variant_3.csv"),
-     4: os.path.join(BASE_DIR, "csv", "fish_potential_variant_4.csv")
+# Karena file ini ada di streamlit/pages/, naik 2 level ke root project
+PROJECT_ROOT = os.path.dirname(os.path.dirname(BASE_DIR))
+
+# CSV ada di folder "csv" di root project
+csv_files = {
+    1: os.path.join(PROJECT_ROOT, "csv", "fish_potential_variant_1.csv"),
+    2: os.path.join(PROJECT_ROOT, "csv", "fish_potential_variant_2.csv"), 
+    3: os.path.join(PROJECT_ROOT, "csv", "fish_potential_variant_3.csv"),
+    4: os.path.join(PROJECT_ROOT, "csv", "fish_potential_variant_4.csv")
 }
 
 # Informasi periode
@@ -198,7 +194,10 @@ try:
     st.success(f"✅ Data berhasil dimuat dari variant_{selected_week}.csv")
 except FileNotFoundError:
     st.error(f"❌ File tidak ditemukan: {csv_path}")
-    st.info("Pastikan file CSV tersedia di lokasi yang ditentukan")
+    st.info(f"💡 **Pastikan struktur folder benar:**\n\n"
+            f"Lokasi yang dicari: `{csv_path}`\n\n"
+            f"Silakan buat folder `data` di direktori yang sama dengan script ini, "
+            f"kemudian letakkan file CSV di dalamnya.")
     st.stop()
 except Exception as e:
     st.error(f"❌ Error membaca file: {str(e)}")
@@ -519,5 +518,8 @@ with st.expander("📖 Panduan Penggunaan"):
     - Marker Biru: Potensi ikan
     - Marker Merah: Zona bahaya
     - Garis Cyan: Rute navigasi
-
+    
+    **5. Struktur Folder:**
+    - Pastikan file CSV berada di folder `data/` 
+    - Struktur: `project_root/data/fish_potential_variant_X.csv`
     """)
