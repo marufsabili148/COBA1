@@ -237,15 +237,60 @@ st.markdown("""
 
 # === BACA CSV ===
 # Lokasi file hasil_deteksi.py
-BASE_DIR = os.path.dirname(__file__)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# Naik 2 folder ke root project
-PROJECT_DIR = os.path.abspath(os.path.join(BASE_DIR, "..", ".."))
+# Coba beberapa kemungkinan path
+possible_paths = [
+    os.path.join(BASE_DIR, "..", "..", "csv", "fish_potential.csv"),  # Naik 2 folder
+    os.path.join(BASE_DIR, "..", "csv", "fish_potential.csv"),  # Naik 1 folder
+    os.path.join(BASE_DIR, "csv", "fish_potential.csv"),  # Folder sejajar
+    os.path.join(os.getcwd(), "csv", "fish_potential.csv"),  # Dari working directory
+    "csv/fish_potential.csv",  # Path relatif sederhana
+    "fish_potential.csv",  # Di folder yang sama
+]
 
-# Path CSV
-csv_path = os.path.join(PROJECT_DIR, "csv", "fish_potential.csv")
+# Cari file yang ada
+csv_path = None
+for path in possible_paths:
+    abs_path = os.path.abspath(path)
+    if os.path.exists(abs_path):
+        csv_path = abs_path
+        break
+
+# Jika tidak ditemukan, tampilkan error informatif
+if csv_path is None:
+    st.error("❌ **File CSV tidak ditemukan!**")
+    st.info(f"""
+    📁 **Path yang dicoba:**
+    
+    {chr(10).join(['- ' + os.path.abspath(p) for p in possible_paths])}
+    
+    **Solusi:**
+    1. Pastikan file `fish_potential.csv` ada di folder `csv/`
+    2. Periksa struktur folder project Anda
+    3. Upload file CSV jika belum ada
+    """)
+    
+    # Tampilkan struktur folder saat ini
+    st.markdown("### 📂 Struktur Folder Saat Ini:")
+    try:
+        current_dir = os.getcwd()
+        files = []
+        for root, dirs, filenames in os.walk(current_dir):
+            level = root.replace(current_dir, '').count(os.sep)
+            indent = ' ' * 2 * level
+            files.append(f"{indent}{os.path.basename(root)}/")
+            subindent = ' ' * 2 * (level + 1)
+            for filename in filenames[:10]:  # Batasi 10 file per folder
+                files.append(f"{subindent}{filename}")
+        st.code('\n'.join(files[:50]))  # Batasi 50 baris
+    except:
+        pass
+    
+    st.stop()
 
 df = pd.read_csv(csv_path)
+st.sidebar.success(f"✅ CSV ditemukan: `{os.path.basename(csv_path)}`")
 
 # Validasi kolom wajib
 required_cols = {"lat", "lon", "skor", "ikan"}
