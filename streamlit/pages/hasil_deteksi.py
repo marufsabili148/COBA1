@@ -6,6 +6,7 @@ from streamlit_folium import st_folium
 from streamlit_js_eval import get_geolocation
 from streamlit_option_menu import option_menu
 import os
+import time
 
 # === KONFIGURASI HALAMAN ===
 st.set_page_config(
@@ -169,7 +170,19 @@ st.markdown("""
         font-family: 'Inter', sans-serif !important;
     }
     
-    /* Number Input & Select Box */
+    /* Number Input & Select Box - Fixed Overlap */
+    [data-testid="stNumberInput"] label,
+    [data-testid="stSelectbox"] label {
+        display: block !important;
+        margin-bottom: 0.5rem !important;
+        font-size: clamp(0.8rem, 2vw, 0.9rem) !important;
+    }
+    
+    .stNumberInput > div,
+    .stSelectbox > div {
+        width: 100% !important;
+    }
+    
     .stNumberInput > div > div > input,
     .stSelectbox > div > div {
         border-radius: 4px;
@@ -257,6 +270,14 @@ st.markdown("""
 # === SESSION STATE ===
 if 'current_page' not in st.session_state:
     st.session_state.current_page = 'Deteksi Zona Ikan'
+if 'use_gps' not in st.session_state:
+    st.session_state.use_gps = False
+if 'gps_lat' not in st.session_state:
+    st.session_state.gps_lat = None
+if 'gps_lon' not in st.session_state:
+    st.session_state.gps_lon = None
+if 'last_refresh' not in st.session_state:
+    st.session_state.last_refresh = time.time()
 
 # === NAVIGATION - RESPONSIVE ===
 selected = option_menu(
@@ -315,9 +336,7 @@ st.markdown("""
 
 # === LOAD CSV WITH UPDATED PATH ===
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-# Naik 1 level dari pages/ ke streamlit/
 PROJECT_ROOT = os.path.dirname(BASE_DIR)
-# CSV ada di dalam streamlit/csv
 csv_path = os.path.join(PROJECT_ROOT, "csv", "fish_potential.csv")
 
 try:
@@ -361,46 +380,92 @@ basemap_option = st.sidebar.selectbox(
     ["OpenStreetMap", "Esri Satellite"]
 )
 
-# GPS Detection
-loc = get_geolocation()
-if loc is not None and "coords" in loc:
-    default_start_lat = loc["coords"]["latitude"]
-    default_start_lon = loc["coords"]["longitude"]
-    st.sidebar.success("📍 GPS terdeteksi!")
-else:
-    default_start_lat = df_filtered.lat.mean()
-    default_start_lon = df_filtered.lon.mean()
-    st.sidebar.warning("⚠️ GPS tidak terdeteksi")
+# === GPS DETECTION WITH AUTO-REFRESH ===
+st.sidebar.markdown("---")
+st.sidebar.markdown("### 🛰️ Kontrol GPS")
 
+use_auto_gps = st.sidebar.checkbox(
+    "Gunakan GPS Otomatis", 
+    value=st.session_state.use_gps,
+    help="Aktifkan untuk tracking posisi real-time dengan auto-refresh setiap 10 detik"
+)
+st.session_state.use_gps = use_auto_gps
+
+# Ambil koordinat GPS
+if use_auto_gps:
+    loc = get_geolocation()
+    if loc is not None and "coords" in loc:
+        st.session_state.gps_lat = loc["coords"]["latitude"]
+        st.session_state.gps_lon = loc["coords"]["longitude"]
+        default_start_lat = st.session_state.gps_lat
+        default_start_lon = st.session_state.gps_lon
+        st.sidebar.success("📍 GPS terdeteksi dan aktif!")
+        
+        # Tampilkan countdown untuk refresh berikutnya
+        elapsed = time.time() - st.session_state.last_refresh
+        remaining = max(0, 10 - int(elapsed))
+        st.sidebar.info(f"🔄 Refresh berikutnya dalam: {remaining} detik")
+        
+    else:
+        if st.session_state.gps_lat is not None:
+            default_start_lat = st.session_state.gps_lat
+            default_start_lon = st.session_state.gps_lon
+        else:
+            default_start_lat = df_filtered.lat.mean()
+            default_start_lon = df_filtered.lon.mean()
+        st.sidebar.warning("⚠️ Menunggu sinyal GPS...")
+else:
+    if st.session_state.gps_lat is not None:
+        default_start_lat = st.session_state.gps_lat
+        default_start_lon = st.session_state.gps_lon
+    else:
+        default_start_lat = df_filtered.lat.mean()
+        default_start_lon = df_filtered.lon.mean()
+    st.sidebar.info("ℹ️ Mode manual - GPS dinonaktifkan")
+
+st.sidebar.markdown("---")
 st.sidebar.markdown("#### 📍 Posisi Awal")
+
 start_lat = st.sidebar.number_input(
     "Latitude", 
     value=float(default_start_lat), 
     format="%.6f",
-    key="start_lat"
+    key="start_lat",
+    disabled=use_auto_gps,
+    help="Koordinat latitude posisi awal (otomatis dari GPS atau input manual)"
 )
 start_lon = st.sidebar.number_input(
     "Longitude", 
     value=float(default_start_lon), 
     format="%.6f",
-    key="start_lon"
+    key="start_lon",
+    disabled=use_auto_gps,
+    help="Koordinat longitude posisi awal (otomatis dari GPS atau input manual)"
 )
+
+# Update session state jika manual
+if not use_auto_gps:
+    st.session_state.gps_lat = start_lat
+    st.session_state.gps_lon = start_lon
 
 st.sidebar.markdown("#### 🎯 Tujuan")
 end_lat = st.sidebar.number_input(
     "Latitude", 
     value=float(df_filtered.lat.mean()), 
     format="%.6f",
-    key="end_lat"
+    key="end_lat",
+    help="Koordinat latitude tujuan"
 )
 end_lon = st.sidebar.number_input(
     "Longitude", 
     value=float(df_filtered.lon.mean()), 
     format="%.6f",
-    key="end_lon"
+    key="end_lon",
+    help="Koordinat longitude tujuan"
 )
 
-if st.sidebar.button("🔄 Refresh GPS"):
+if st.sidebar.button("🔄 Refresh Manual"):
+    st.session_state.last_refresh = time.time()
     st.rerun()
 
 # === MAIN MAP SECTION ===
@@ -408,7 +473,6 @@ st.markdown('<h2 class="section-header">🗺️ Peta Interaktif</h2>', unsafe_al
 
 # === KONTROL LAYER (RESPONSIVE) ===
 with st.expander("🎛️ Kontrol Layer", expanded=True):
-    # Buat 2 kolom untuk mobile-friendly
     col_heat, col_marker = st.columns(2)
     
     with col_heat:
@@ -527,6 +591,26 @@ if show_route:
         dash_array="10"
     ).add_to(m)
 
+# === MARKER GPS AKTIF ===
+if use_auto_gps and st.session_state.gps_lat is not None:
+    folium.Marker(
+        [start_lat, start_lon],
+        popup="🧭 Posisi Anda Saat Ini (GPS Live)",
+        icon=folium.Icon(color="darkgreen", icon="user", prefix='fa'),
+        tooltip="Lokasi GPS Real-Time"
+    ).add_to(m)
+    
+    # Circle untuk radius akurasi
+    folium.Circle(
+        location=[start_lat, start_lon],
+        radius=50,
+        color='green',
+        fill=True,
+        fillColor='green',
+        fillOpacity=0.2,
+        popup="Radius akurasi GPS (~50m)"
+    ).add_to(m)
+
 # Tampilkan peta dengan ukuran responsif
 st_data = st_folium(m, width=None, height=500, returned_objects=[])
 
@@ -538,8 +622,10 @@ with st.expander("ℹ️ Informasi Navigasi", expanded=False):
     
     col1, col2 = st.columns(2)
     with col1:
+        gps_status = "🟢 GPS Aktif" if use_auto_gps else "🔴 Manual"
         st.markdown(f"""
         **📍 Koordinat**
+        - Status: {gps_status}
         - Posisi: {start_lat:.6f}, {start_lon:.6f}
         - Tujuan: {end_lat:.6f}, {end_lon:.6f}
         """)
@@ -576,14 +662,41 @@ with st.expander("📖 Panduan Penggunaan"):
     st.markdown("""
     ### Cara Menggunakan:
     
-    **1. Input Koordinat** - Masukkan posisi awal dan tujuan di sidebar
+    **1. GPS Otomatis (Recommended)**
+    - Centang "Gunakan GPS Otomatis" di sidebar
+    - Izinkan akses lokasi saat browser meminta
+    - Posisi akan diupdate otomatis setiap 10 detik
+    - Marker hijau tua dengan ikon user menunjukkan posisi real-time Anda
     
-    **2. Kontrol Layer** - Toggle checkbox untuk show/hide layer
+    **2. Mode Manual**
+    - Nonaktifkan GPS otomatis
+    - Input koordinat secara manual di sidebar
+    - Klik "Refresh Manual" untuk update peta
     
-    **3. Interpretasi Warna:**
+    **3. Kontrol Layer**
+    - Toggle checkbox untuk show/hide layer tertentu
+    - Heatmap menampilkan gradasi intensitas potensi
+    - Marker biru = lokasi ikan
+    - Marker merah = zona bahaya
+    
+    **4. Interpretasi Warna Heatmap:**
     - Biru = Rendah | Hijau = Sedang | Oranye = Tinggi | Merah = Sangat Tinggi
     
-    **4. Navigasi** - Garis cyan = rute | Marker hijau = awal | Marker biru = tujuan
+    **5. Navigasi**
+    - Garis cyan = rute estimasi
+    - Marker hijau = posisi awal
+    - Marker biru = tujuan
+    - Marker hijau tua + circle = GPS aktif
     
-    **5. Basemap** - OpenStreetMap (standar) atau Esri Satellite (citra)
+    **6. Basemap**
+    - OpenStreetMap (standar) = Detail jalan dan topografi
+    - Esri Satellite = Citra satelit real
     """)
+
+# === AUTO-REFRESH GPS (10 DETIK) ===
+if use_auto_gps:
+    elapsed = time.time() - st.session_state.last_refresh
+    if elapsed >= 10:
+        st.session_state.last_refresh = time.time()
+        time.sleep(0.1)  # Small delay untuk stabilitas
+        st.rerun()
