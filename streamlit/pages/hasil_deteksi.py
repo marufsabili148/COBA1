@@ -15,14 +15,18 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# === CUSTOM CSS - COPERNICUS STYLE ===
+# === CUSTOM CSS - COPERNICUS STYLE (CONSISTENT WITH HOME.PY) ===
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
     
-    /* Global Reset */
+    /* Global Reset with Inter Font */
     * {
-        font-family: 'Inter', sans-serif;
+        font-family: 'Inter', sans-serif !important;
+    }
+    
+    html, body, [class*="css"] {
+        font-family: 'Inter', sans-serif !important;
     }
     
     #MainMenu {visibility: hidden;}
@@ -30,31 +34,35 @@ st.markdown("""
     header {visibility: hidden;}
     
     .block-container {
-        padding-top: 2rem;
-        padding-bottom: 2rem;
+        padding-top: clamp(1rem, 3vw, 2rem);
+        padding-bottom: clamp(1rem, 3vw, 2rem);
+        padding-left: clamp(0.5rem, 2vw, 1rem);
+        padding-right: clamp(0.5rem, 2vw, 1rem);
         max-width: 1400px;
     }
     
-    /* Page Header */
+    /* Page Header - Responsive */
     .page-header {
         background: linear-gradient(180deg, #f8f9fa 0%, #ffffff 100%);
-        padding: 2rem 0 1.5rem 0;
-        margin: -2rem -6rem 2rem -6rem;
+        padding: clamp(1.5rem, 4vw, 2rem) 0 clamp(1rem, 3vw, 1.5rem) 0;
+        margin: -1rem -1rem 2rem -1rem;
         border-bottom: 1px solid #e1e4e8;
         text-align: center;
     }
     
     .page-title {
-        font-size: 2.5rem;
-        font-weight: 600;
+        font-size: clamp(1.8rem, 5vw, 2.5rem) !important;
+        font-weight: 600 !important;
         color: #0e4194;
         margin-bottom: 0.5rem;
+        font-family: 'Inter', sans-serif !important;
     }
     
     .page-subtitle {
-        font-size: 1.1rem;
+        font-size: clamp(0.95rem, 2.5vw, 1.1rem) !important;
         color: #586069;
         font-weight: 400;
+        font-family: 'Inter', sans-serif !important;
     }
     
     /* Sidebar Styling */
@@ -66,17 +74,18 @@ st.markdown("""
         background-color: #f8f9fa;
     }
     
-    /* Buttons */
+    /* Buttons - Responsive */
     .stButton > button {
         background-color: #0e4194;
         color: white;
         border: none;
-        padding: 0.5rem 1.5rem;
-        font-size: 0.95rem;
+        padding: clamp(0.5rem, 2vw, 0.75rem) clamp(1.25rem, 3vw, 1.5rem);
+        font-size: clamp(0.85rem, 2vw, 0.95rem) !important;
         font-weight: 500;
         border-radius: 4px;
         transition: all 0.2s ease;
         width: 100%;
+        font-family: 'Inter', sans-serif !important;
     }
     
     .stButton > button:hover {
@@ -84,44 +93,89 @@ st.markdown("""
         box-shadow: 0 4px 8px rgba(14, 65, 148, 0.2);
     }
     
-    /* Section Headers */
+    /* Section Headers - Responsive */
     .section-header {
-        font-size: 1.5rem;
-        font-weight: 600;
+        font-size: clamp(1.3rem, 3.5vw, 1.5rem) !important;
+        font-weight: 600 !important;
         color: #24292e;
-        margin: 2rem 0 1rem 0;
+        margin: clamp(1.5rem, 3vw, 2rem) 0 clamp(0.75rem, 2vw, 1rem) 0;
         padding-bottom: 0.5rem;
         border-bottom: 2px solid #0e4194;
+        font-family: 'Inter', sans-serif !important;
     }
     
-    /* Info Boxes */
+    /* Info Boxes - Responsive */
     .info-box {
         background: #f6f8fa;
         border-left: 4px solid #0e4194;
-        padding: 1.5rem;
-        margin: 1rem 0;
+        padding: clamp(1rem, 2.5vw, 1.5rem);
+        margin: clamp(0.75rem, 2vw, 1rem) 0;
         border-radius: 4px;
     }
     
-    /* Metrics */
+    .info-box h4 {
+        font-family: 'Inter', sans-serif !important;
+        font-size: clamp(1rem, 2.5vw, 1.15rem) !important;
+    }
+    
+    .info-box p {
+        font-family: 'Inter', sans-serif !important;
+        font-size: clamp(0.85rem, 2vw, 0.95rem) !important;
+    }
+    
+    /* Metrics - Responsive */
     [data-testid="stMetricValue"] {
-        font-size: 1.8rem;
-        font-weight: 600;
+        font-size: clamp(1.4rem, 4vw, 1.8rem) !important;
+        font-weight: 600 !important;
         color: #0e4194;
+        font-family: 'Inter', sans-serif !important;
     }
     
     [data-testid="stMetricLabel"] {
-        font-size: 0.9rem;
+        font-size: clamp(0.8rem, 2vw, 0.9rem) !important;
         color: #586069;
         font-weight: 500;
+        font-family: 'Inter', sans-serif !important;
     }
     
     /* Expander */
     .streamlit-expanderHeader {
         background-color: #f6f8fa;
         border-radius: 4px;
-        font-weight: 500;
+        font-weight: 500 !important;
         color: #24292e;
+        font-family: 'Inter', sans-serif !important;
+        font-size: clamp(0.9rem, 2vw, 1rem) !important;
+    }
+    
+    /* Control Cards - Responsive */
+    .control-card {
+        background: white;
+        border: 1px solid #e1e4e8;
+        border-radius: 8px;
+        padding: clamp(1rem, 2.5vw, 1.5rem);
+        margin-bottom: 1rem;
+    }
+    
+    .control-card-title {
+        font-size: clamp(1rem, 2.5vw, 1.1rem) !important;
+        font-weight: 600 !important;
+        color: #24292e;
+        margin-bottom: 1rem;
+        font-family: 'Inter', sans-serif !important;
+    }
+    
+    /* Input Fields */
+    .stNumberInput > div > div > input {
+        border-radius: 4px;
+        border: 1px solid #e1e4e8;
+        font-family: 'Inter', sans-serif !important;
+    }
+    
+    .stSelectbox > div > div > select {
+        border-radius: 4px;
+        border: 1px solid #e1e4e8;
+        font-family: 'Inter', sans-serif !important;
     }
     
     /* Checkbox */
@@ -129,57 +183,39 @@ st.markdown("""
         padding: 0.25rem 0;
     }
     
-    /* Number Input */
-    .stNumberInput > div > div > input {
-        border-radius: 4px;
-        border: 1px solid #e1e4e8;
+    .stCheckbox label {
+        font-family: 'Inter', sans-serif !important;
+        font-size: clamp(0.85rem, 2vw, 0.95rem) !important;
     }
     
-    /* Select Box */
-    .stSelectbox > div > div > select {
-        border-radius: 4px;
-        border: 1px solid #e1e4e8;
-    }
-    
-    /* Control Cards */
-    .control-card {
-        background: white;
-        border: 1px solid #e1e4e8;
-        border-radius: 8px;
-        padding: 1.5rem;
-        margin-bottom: 1rem;
-    }
-    
-    .control-card-title {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: #24292e;
-        margin-bottom: 1rem;
-    }
-    
-    /* Stats Grid */
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1rem;
-        margin: 1.5rem 0;
-    }
-    
+    /* Typography */
     h1, h2, h3, h4, h5, h6 {
         color: #24292e;
-        font-family: 'Inter', sans-serif;
+        font-family: 'Inter', sans-serif !important;
+    }
+    
+    p, span, div, label {
+        font-family: 'Inter', sans-serif !important;
     }
     
     /* Sidebar Headers */
     .sidebar .sidebar-content h2, .sidebar .sidebar-content h3 {
         color: #0e4194;
-        font-weight: 600;
-        font-family: 'Inter', sans-serif;
+        font-weight: 600 !important;
+        font-family: 'Inter', sans-serif !important;
+        font-size: clamp(1rem, 2.5vw, 1.2rem) !important;
     }
     
-    /* Text styling */
-    p, span, div, label {
-        font-family: 'Inter', sans-serif;
+    /* Mobile Optimization */
+    @media (max-width: 768px) {
+        .page-header {
+            margin: -0.5rem -0.5rem 1.5rem -0.5rem;
+            padding: 1.5rem 1rem;
+        }
+        
+        .control-card {
+            padding: 1rem;
+        }
     }
 </style>
 """, unsafe_allow_html=True)
@@ -188,7 +224,7 @@ st.markdown("""
 if 'current_page' not in st.session_state:
     st.session_state.current_page = 'Deteksi Zona Ikan'
 
-# === NAVIGATION ===
+# === NAVIGATION (CONSISTENT WITH HOME.PY) ===
 selected = option_menu(
     menu_title=None,
     options=["Beranda", "Deteksi Zona Ikan", "Prediksi 30 Hari", "Tutorial", "Tentang"],
@@ -197,17 +233,25 @@ selected = option_menu(
     default_index=1,
     orientation="horizontal",
     styles={
-        "container": {"padding": "0", "background-color": "#ffffff", "border-bottom": "1px solid #e1e4e8"},
-        "icon": {"color": "#586069", "font-size": "16px"},
+        "container": {
+            "padding": "0", 
+            "background-color": "transparent", 
+            "border-bottom": "1px solid #e1e4e8"
+        },
+        "icon": {
+            "color": "#586069", 
+            "font-size": "clamp(14px, 3vw, 16px)"
+        },
         "nav-link": {
-            "font-size": "15px",
+            "font-size": "clamp(0.75rem, 2vw, 0.95rem)",
             "text-align": "center",
             "margin": "0",
-            "padding": "14px 24px",
+            "padding": "clamp(10px, 2vw, 14px) clamp(12px, 3vw, 24px)",
             "color": "#24292e",
             "font-weight": "500",
             "border-bottom": "3px solid transparent",
             "--hover-color": "#f6f8fa",
+            "font-family": "Inter, sans-serif",
         },
         "nav-link-selected": {
             "background-color": "transparent",
@@ -223,9 +267,9 @@ if selected == "Beranda":
 elif selected == "Prediksi 30 Hari":
     st.switch_page("pages/forecast.py")
 elif selected == "Tutorial":
-    st.switch_page("Beranda.py")
+    st.switch_page("home.py")
 elif selected == "Tentang":
-    st.switch_page("Beranda.py")
+    st.switch_page("home.py")
 
 # === PAGE HEADER ===
 st.markdown("""
@@ -235,62 +279,23 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# === BACA CSV ===
-# Lokasi file hasil_deteksi.py
+# === MAPPING CSV FILES (RELATIVE PATH) ===
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# Naik 1 level dari pages/ ke streamlit/
+PROJECT_ROOT = os.path.dirname(BASE_DIR)
+# CSV ada di dalam streamlit/csv
+csv_files = {
+    1: os.path.join(PROJECT_ROOT, "csv", "fish_potential_variant_1.csv"),
+    2: os.path.join(PROJECT_ROOT, "csv", "fish_potential_variant_2.csv"), 
+    3: os.path.join(PROJECT_ROOT, "csv", "fish_potential_variant_3.csv"),
+    4: os.path.join(PROJECT_ROOT, "csv", "fish_potential_variant_4.csv")
+}
 
-# Coba beberapa kemungkinan path
-possible_paths = [
-    os.path.join(BASE_DIR, "..", "..", "csv", "fish_potential.csv"),  # Naik 2 folder
-    os.path.join(BASE_DIR, "..", "csv", "fish_potential.csv"),  # Naik 1 folder
-    os.path.join(BASE_DIR, "csv", "fish_potential.csv"),  # Folder sejajar
-    os.path.join(os.getcwd(), "csv", "fish_potential.csv"),  # Dari working directory
-    "csv/fish_potential.csv",  # Path relatif sederhana
-    "fish_potential.csv",  # Di folder yang sama
-]
+# Default: gunakan variant 1
+csv_path = csv_files[1]
 
-# Cari file yang ada
-csv_path = None
-for path in possible_paths:
-    abs_path = os.path.abspath(path)
-    if os.path.exists(abs_path):
-        csv_path = abs_path
-        break
-
-# Jika tidak ditemukan, tampilkan error informatif
-if csv_path is None:
-    st.error("❌ **File CSV tidak ditemukan!**")
-    st.info(f"""
-    📁 **Path yang dicoba:**
-    
-    {chr(10).join(['- ' + os.path.abspath(p) for p in possible_paths])}
-    
-    **Solusi:**
-    1. Pastikan file `fish_potential.csv` ada di folder `csv/`
-    2. Periksa struktur folder project Anda
-    3. Upload file CSV jika belum ada
-    """)
-    
-    # Tampilkan struktur folder saat ini
-    st.markdown("### 📂 Struktur Folder Saat Ini:")
-    try:
-        current_dir = os.getcwd()
-        files = []
-        for root, dirs, filenames in os.walk(current_dir):
-            level = root.replace(current_dir, '').count(os.sep)
-            indent = ' ' * 2 * level
-            files.append(f"{indent}{os.path.basename(root)}/")
-            subindent = ' ' * 2 * (level + 1)
-            for filename in filenames[:10]:  # Batasi 10 file per folder
-                files.append(f"{subindent}{filename}")
-        st.code('\n'.join(files[:50]))  # Batasi 50 baris
-    except:
-        pass
-    
-    st.stop()
-
+# Baca CSV
 df = pd.read_csv(csv_path)
-st.sidebar.success(f"✅ CSV ditemukan: `{os.path.basename(csv_path)}`")
 
 # Validasi kolom wajib
 required_cols = {"lat", "lon", "skor", "ikan"}
@@ -325,7 +330,7 @@ basemap_option = st.sidebar.selectbox(
     ["OpenStreetMap", "Esri Satellite"]
 )
 
-# Ambil GPS live user - PERBAIKAN DI SINI
+# Ambil GPS live user
 loc = get_geolocation()
 if loc is not None and "coords" in loc:
     default_start_lat = loc["coords"]["latitude"]
@@ -376,7 +381,7 @@ if st.sidebar.button("🔄 Refresh GPS"):
 st.markdown('<h2 class="section-header">🗺️ Peta Interaktif</h2>', unsafe_allow_html=True)
 
 # === KONTROL LAYER ===
-st.markdown('<h3 class="section-header" style="font-size: 1.25rem; margin-top: 1rem;">🎛️ Kontrol Layer</h3>', unsafe_allow_html=True)
+st.markdown('<h3 class="section-header" style="font-size: clamp(1.1rem, 3vw, 1.25rem); margin-top: 1rem;">🎛️ Kontrol Layer</h3>', unsafe_allow_html=True)
 
 # Buat kolom untuk toggle controls
 col1, col2, col3 = st.columns(3)
