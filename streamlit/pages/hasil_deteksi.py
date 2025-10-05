@@ -330,31 +330,51 @@ basemap_option = st.sidebar.selectbox(
     ["OpenStreetMap", "Esri Satellite"]
 )
 
+# Inisialisasi session state untuk menyimpan koordinat GPS
+if 'gps_lat' not in st.session_state:
+    st.session_state.gps_lat = None
+if 'gps_lon' not in st.session_state:
+    st.session_state.gps_lon = None
+if 'gps_detected' not in st.session_state:
+    st.session_state.gps_detected = False
+
 # Ambil GPS live user
 loc = get_geolocation()
 if loc is not None and "coords" in loc:
-    default_start_lat = loc["coords"]["latitude"]
-    default_start_lon = loc["coords"]["longitude"]
+    # Update session state dengan koordinat GPS
+    st.session_state.gps_lat = loc["coords"]["latitude"]
+    st.session_state.gps_lon = loc["coords"]["longitude"]
+    st.session_state.gps_detected = True
     st.sidebar.success("📍 GPS berhasil terdeteksi!")
+    st.sidebar.info(f"Lat: {st.session_state.gps_lat:.6f}, Lon: {st.session_state.gps_lon:.6f}")
+else:
+    if not st.session_state.gps_detected:
+        st.sidebar.warning("⚠️ GPS tidak terdeteksi, menggunakan koordinat default")
+
+# Tentukan nilai default untuk input
+if st.session_state.gps_detected and st.session_state.gps_lat is not None:
+    default_start_lat = st.session_state.gps_lat
+    default_start_lon = st.session_state.gps_lon
 else:
     default_start_lat = df_filtered.lat.mean()
     default_start_lon = df_filtered.lon.mean()
-    st.sidebar.warning("⚠️ GPS tidak terdeteksi, menggunakan koordinat default")
 
 # Input koordinat manual
 st.sidebar.markdown("#### 📍 Posisi Awal")
+st.sidebar.caption("GPS terdeteksi - ubah manual jika perlu" if st.session_state.gps_detected else "Masukkan koordinat manual")
+
 start_lat = st.sidebar.number_input(
     "Latitude", 
     value=float(default_start_lat), 
     format="%.6f",
-    help="Koordinat latitude posisi Anda saat ini",
+    help="Koordinat latitude posisi Anda saat ini (terisi otomatis dari GPS)",
     key="start_lat"
 )
 start_lon = st.sidebar.number_input(
     "Longitude", 
     value=float(default_start_lon), 
     format="%.6f",
-    help="Koordinat longitude posisi Anda saat ini",
+    help="Koordinat longitude posisi Anda saat ini (terisi otomatis dari GPS)",
     key="start_lon"
 )
 
@@ -374,8 +394,18 @@ end_lon = st.sidebar.number_input(
     key="end_lon"
 )
 
-if st.sidebar.button("🔄 Refresh GPS"):
-    st.rerun()
+col_btn1, col_btn2 = st.sidebar.columns(2)
+with col_btn1:
+    if st.button("🔄 Refresh GPS", use_container_width=True):
+        st.session_state.gps_detected = False
+        st.rerun()
+with col_btn2:
+    if st.button("📍 Gunakan GPS", use_container_width=True):
+        if st.session_state.gps_detected and st.session_state.gps_lat is not None:
+            # Force update dengan rerun
+            st.rerun()
+        else:
+            st.sidebar.error("GPS belum terdeteksi")
 
 # === MAIN MAP SECTION ===
 st.markdown('<h2 class="section-header">🗺️ Peta Interaktif</h2>', unsafe_allow_html=True)
@@ -511,16 +541,38 @@ if show_bahaya_markers:
             icon=folium.Icon(color="red", icon="warning-sign")
         ).add_to(m)
 
+# === Marker Posisi Awal (SELALU TAMPIL jika GPS terdeteksi atau koordinat diinput) ===
+# Tambahkan marker posisi awal dengan icon khusus untuk GPS
+if st.session_state.gps_detected:
+    folium.Marker(
+        [start_lat, start_lon], 
+        popup=f"📍 <b>Posisi Anda (GPS)</b><br>Lat: {start_lat:.6f}<br>Lon: {start_lon:.6f}", 
+        icon=folium.Icon(color="green", icon="record", prefix='fa'),
+        tooltip="Posisi Anda Saat Ini"
+    ).add_to(m)
+else:
+    folium.Marker(
+        [start_lat, start_lon], 
+        popup=f"📍 <b>Posisi Awal (Manual)</b><br>Lat: {start_lat:.6f}<br>Lon: {start_lon:.6f}", 
+        icon=folium.Icon(color="lightgreen", icon="map-marker", prefix='fa'),
+        tooltip="Posisi Awal"
+    ).add_to(m)
+
 # === Gambar garis rute ===
 if show_route:
-    folium.Marker([start_lat, start_lon], popup="📍 Titik Awal (Posisi Anda)", icon=folium.Icon(color="green", icon="play")).add_to(m)
-    folium.Marker([end_lat, end_lon], popup="🎯 Titik Tujuan", icon=folium.Icon(color="blue", icon="flag")).add_to(m)
+    folium.Marker(
+        [end_lat, end_lon], 
+        popup=f"🎯 <b>Titik Tujuan</b><br>Lat: {end_lat:.6f}<br>Lon: {end_lon:.6f}", 
+        icon=folium.Icon(color="blue", icon="flag"),
+        tooltip="Tujuan"
+    ).add_to(m)
     folium.PolyLine(
         locations=[[start_lat, start_lon], [end_lat, end_lon]],
         color="cyan",
         weight=4,
         opacity=0.8,
-        dash_array="10"
+        dash_array="10",
+        popup=f"Rute: {((end_lat-start_lat)**2 + (end_lon-start_lon)**2)**0.5 * 111:.1f} km"
     ).add_to(m)
 
 # Tampilkan peta
@@ -533,16 +585,15 @@ st.markdown('<h2 class="section-header">ℹ️ Informasi Navigasi</h2>', unsafe_
 col_info1, col_info2 = st.columns(2)
 
 with col_info1:
-    st.markdown("""
+    gps_status = "GPS Aktif 🟢" if st.session_state.gps_detected else "Manual 🔵"
+    st.markdown(f"""
     <div class="info-box">
-        <h4 style="margin-top: 0; color: #0e4194;">📍 Koordinat</h4>
-        <p style="margin: 0.5rem 0;"><strong>Posisi Awal:</strong> {:.6f}, {:.6f}</p>
-        <p style="margin: 0.5rem 0;"><strong>Tujuan:</strong> {:.6f}, {:.6f}</p>
-        <p style="margin: 0.5rem 0;"><strong>Jarak Estimasi:</strong> ≈ {:.1f} km</p>
+        <h4 style="margin-top: 0; color: #0e4194;">📍 Koordinat ({gps_status})</h4>
+        <p style="margin: 0.5rem 0;"><strong>Posisi Awal:</strong> {start_lat:.6f}, {start_lon:.6f}</p>
+        <p style="margin: 0.5rem 0;"><strong>Tujuan:</strong> {end_lat:.6f}, {end_lon:.6f}</p>
+        <p style="margin: 0.5rem 0;"><strong>Jarak Estimasi:</strong> ≈ {((end_lat-start_lat)**2 + (end_lon-start_lon)**2)**0.5 * 111:.1f} km</p>
     </div>
-    """.format(start_lat, start_lon, end_lat, end_lon, 
-               ((end_lat-start_lat)**2 + (end_lon-start_lon)**2)**0.5 * 111), 
-    unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
 
 with col_info2:
     st.markdown('<div class="info-box">', unsafe_allow_html=True)
