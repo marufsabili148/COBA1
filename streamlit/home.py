@@ -368,8 +368,8 @@ selected = option_menu(
     styles={
         "container": {
             "padding": "0", 
-            "background-color": "#ffffff", 
-            "border-bottom": "1px solid #e1e4e8"
+            "background-color": "transparent", 
+            "border-bottom": "1px solid #333333"
         },
         "icon": {
             "color": "#586069", 
@@ -757,4 +757,5 @@ elif selected == "Tentang":
     with col3:
         st.markdown("**Documentation**")
         st.markdown("[docs.sailor.id](https://docs.sailor.id)")
+
 
