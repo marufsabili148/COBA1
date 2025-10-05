@@ -360,8 +360,8 @@ if 'current_page' not in st.session_state:
 # === NAVIGATION - RESPONSIVE ===
 selected = option_menu(
     menu_title=None,
-    options=["Beranda", "Deteksi Zona Ikan", "Prediksi 30 Hari", "Tutorial", "Tentang"],
-    icons=["house", "map", "graph-up", "book", "info-circle"],
+    options=["Beranda", "Deteksi Zona Ikan", "Prediksi 30 Hari", "Tutorial", "Tentang", "Feedback"],
+    icons=["house", "map", "graph-up", "book", "info-circle", "chat-dots"],
     menu_icon="cast",
     default_index=["Beranda", "Deteksi Zona Ikan", "Prediksi 30 Hari", "Tutorial", "Tentang"].index(st.session_state.current_page),
     orientation="horizontal",
@@ -399,6 +399,8 @@ if selected == "Deteksi Zona Ikan":
     st.switch_page("pages/hasil_deteksi.py")
 elif selected == "Prediksi 30 Hari":
     st.switch_page("pages/forecast.py")
+elif selected == "Feedback":
+    st.switch_page("pages/feedback.py")
 
 st.session_state.current_page = selected
 
@@ -757,5 +759,6 @@ elif selected == "Tentang":
     with col3:
         st.markdown("**Documentation**")
         st.markdown("[docs.sailor.id](https://docs.sailor.id)")
+
 
 
