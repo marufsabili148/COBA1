@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 from supabase import create_client, Client
+from streamlit_option_menu import option_menu
 import json
 
 # === KONFIGURASI HALAMAN ===
@@ -26,8 +27,13 @@ st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
     
+    /* Global Font */
     * {
-        font-family: 'Inter', sans-serif;
+        font-family: 'Inter', sans-serif !important;
+    }
+    
+    h1, h2, h3, h4, h5, h6, p, span, div, label, input, textarea, select, button {
+        font-family: 'Inter', sans-serif !important;
     }
     
     #MainMenu {visibility: hidden;}
@@ -53,12 +59,14 @@ st.markdown("""
         font-weight: 600;
         color: #0e4194;
         margin-bottom: 0.5rem;
+        font-family: 'Inter', sans-serif !important;
     }
     
     .page-subtitle {
         font-size: 1.1rem;
         color: #586069;
         font-weight: 400;
+        font-family: 'Inter', sans-serif !important;
     }
     
     .stButton > button {
@@ -71,6 +79,7 @@ st.markdown("""
         border-radius: 4px;
         transition: all 0.2s ease;
         width: 100%;
+        font-family: 'Inter', sans-serif !important;
     }
     
     .stButton > button:hover {
@@ -85,6 +94,7 @@ st.markdown("""
         margin: 2rem 0 1rem 0;
         padding-bottom: 0.5rem;
         border-bottom: 2px solid #0e4194;
+        font-family: 'Inter', sans-serif !important;
     }
     
     .info-card {
@@ -93,6 +103,14 @@ st.markdown("""
         padding: 1.5rem;
         margin: 1rem 0;
         border-radius: 4px;
+    }
+    
+    .info-card h3 {
+        font-family: 'Inter', sans-serif !important;
+    }
+    
+    .info-card p {
+        font-family: 'Inter', sans-serif !important;
     }
     
     .success-box {
@@ -104,11 +122,90 @@ st.markdown("""
         color: #155724;
     }
     
+    .success-box h3, .success-box p {
+        font-family: 'Inter', sans-serif !important;
+    }
+    
     .textarea-container {
         margin: 1rem 0;
     }
+    
+    /* Form Elements */
+    .stTextInput > div > div > input,
+    .stNumberInput > div > div > input,
+    .stTextArea > div > div > textarea,
+    .stSelectbox > div > div > select,
+    .stMultiSelect > div > div > div {
+        font-family: 'Inter', sans-serif !important;
+    }
+    
+    /* Labels */
+    .stTextInput > label,
+    .stNumberInput > label,
+    .stTextArea > label,
+    .stSelectbox > label,
+    .stMultiSelect > label,
+    .stRadio > label,
+    .stCheckbox > label {
+        font-family: 'Inter', sans-serif !important;
+    }
 </style>
 """, unsafe_allow_html=True)
+
+# === SESSION STATE ===
+if 'current_page' not in st.session_state:
+    st.session_state.current_page = 'Feedback'
+
+# === NAVIGATION ===
+selected = option_menu(
+    menu_title=None,
+    options=["Beranda", "Deteksi Zona Ikan", "Prediksi 30 Hari", "Tutorial", "Tentang", "Feedback"],
+    icons=["house", "map", "graph-up", "book", "info-circle", "chat-dots"],
+    menu_icon="cast",
+    default_index=5,  # Feedback is at index 5
+    orientation="horizontal",
+    styles={
+        "container": {
+            "padding": "0", 
+            "background-color": "transparent", 
+            "border-bottom": "1px solid #e1e4e8"
+        },
+        "icon": {
+            "color": "#586069", 
+            "font-size": "clamp(14px, 3vw, 16px)"
+        },
+        "nav-link": {
+            "font-size": "clamp(0.75rem, 2vw, 0.95rem)",
+            "text-align": "center",
+            "margin": "0",
+            "padding": "clamp(10px, 2vw, 14px) clamp(12px, 3vw, 24px)",
+            "color": "#24292e",
+            "font-weight": "500",
+            "border-bottom": "3px solid transparent",
+            "--hover-color": "#f6f8fa",
+            "font-family": "Inter, sans-serif",
+        },
+        "nav-link-selected": {
+            "background-color": "transparent",
+            "border-bottom": "3px solid #0e4194",
+            "color": "#0e4194",
+        },
+    }
+)
+
+# Handle navigation to other pages
+if selected == "Beranda":
+    st.switch_page("home.py")
+elif selected == "Deteksi Zona Ikan":
+    st.switch_page("pages/hasil_deteksi.py")
+elif selected == "Prediksi 30 Hari":
+    st.switch_page("pages/forecast.py")
+elif selected == "Tutorial":
+    st.switch_page("home.py")
+elif selected == "Tentang":
+    st.switch_page("home.py")
+
+st.session_state.current_page = selected
 
 # === PAGE HEADER ===
 st.markdown("""
