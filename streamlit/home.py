@@ -43,7 +43,7 @@ st.markdown("""
     
     /* Hero Section - Responsive */
     .hero-container {
-        background: linear-gradient(180deg, #f8f9fa 0%, #ffffff 100%);
+        background: none;
         padding: clamp(2rem, 5vw, 4rem) clamp(1rem, 3vw, 2rem) clamp(1.5rem, 4vw, 3rem);
         margin: -1rem -1rem 2rem -1rem;
         border-bottom: 1px solid #e1e4e8;
@@ -757,3 +757,4 @@ elif selected == "Tentang":
     with col3:
         st.markdown("**Documentation**")
         st.markdown("[docs.sailor.id](https://docs.sailor.id)")
+
