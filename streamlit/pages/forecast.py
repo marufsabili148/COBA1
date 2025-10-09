@@ -235,57 +235,46 @@ st.markdown("""
 # === SESSION STATE ===
 if 'current_page' not in st.session_state:
     st.session_state.current_page = 'Prediksi 30 Hari'
+st.session_state.current_page = 'Prediksi 30 Hari'
 
-# === NAVIGATION MENU (RESPONSIVE) ===
+# === NAVIGATION MENU (UNIFIED) ===
+nav_options = ["Beranda", "Deteksi Zona Ikan", "Prediksi 30 Hari", "Tutorial", "Tentang", "Feedback"]
+current = st.session_state.get('current_page', 'Prediksi 30 Hari')
+default_index = nav_options.index(current) if current in nav_options else nav_options.index('Prediksi 30 Hari')
 selected = option_menu(
     menu_title=None,
-    options=["Beranda", "Deteksi Zona Ikan", "Prediksi 30 Hari", "Tutorial", "Tentang"],
-    icons=["house", "map", "graph-up", "book", "info-circle"],
+    options=nav_options,
+    icons=["house", "map", "graph-up", "book", "info-circle", "chat-dots"],
     menu_icon="cast",
-    default_index=2,
+    default_index=default_index,
     orientation="horizontal",
-    key="main_menu",
+    key="main_nav",
     styles={
-        "container": {
-            "padding": "0", 
-            "background-color": "#ffffff", 
-            "border-bottom": "1px solid #e1e4e8"
-        },
-        "icon": {
-            "color": "#586069", 
-            "font-size": "clamp(14px, 3vw, 16px)"
-        },
-        "nav-link": {
-            "font-size": "clamp(0.75rem, 2vw, 0.95rem)",
-            "text-align": "center",
-            "margin": "0",
-            "padding": "clamp(10px, 2vw, 14px) clamp(12px, 3vw, 24px)",
-            "color": "#24292e",
-            "font-weight": "500",
-            "border-bottom": "3px solid transparent",
-            "--hover-color": "#f6f8fa",
-            "font-family": "Inter, sans-serif",
-        },
-        "nav-link-selected": {
-            "background-color": "transparent",
-            "border-bottom": "3px solid #0e4194",
-            "color": "#0e4194",
-        },
+        "container": {"padding": "0", "background-color": "#ffffff", "border-bottom": "1px solid #e1e4e8"},
+        "icon": {"color": "#586069", "font-size": "clamp(14px, 3vw, 16px)"},
+        "nav-link": {"font-size": "clamp(0.75rem, 2vw, 0.95rem)", "text-align": "center", "margin": "0", "padding": "clamp(10px, 2vw, 14px) clamp(12px, 3vw, 24px)", "color": "#24292e", "font-weight": "500", "border-bottom": "3px solid transparent", "--hover-color": "#f6f8fa", "font-family": "Inter, sans-serif"},
+        "nav-link-selected": {"background-color": "transparent", "border-bottom": "3px solid #0e4194", "color": "#0e4194"},
     }
 )
 
-# Handle navigation
-if selected != st.session_state.current_page:
+# Only switch if different
+if selected != st.session_state.get('current_page', 'Prediksi 30 Hari'):
     st.session_state.current_page = selected
-    
     if selected == "Beranda":
         st.switch_page("home.py")
     elif selected == "Deteksi Zona Ikan":
         st.switch_page("pages/hasil_deteksi.py")
+    elif selected == "Prediksi 30 Hari":
+        pass
     elif selected == "Tutorial":
         st.switch_page("pages/tutorial.py")
     elif selected == "Tentang":
-        st.switch_page("pages/tentang.py")
+        st.switch_page("home.py")
+    elif selected == "Feedback":
+        st.switch_page("pages/feedback.py")
+
+# sync
+st.session_state.current_page = selected
 
 # === JUDUL HALAMAN ===
 st.title("🌊 Peta Potensi Ikan & Zona Bahaya")
@@ -377,6 +366,23 @@ def alasan_potensi(row):
 df['alasan'] = df.apply(alasan_potensi, axis=1)
 df_filtered = df[df['skor'] > 0.4].copy()
 
+# --- Pilih Titik Deteksi dari daftar (fallback jika klik marker tidak aktif) ---
+try:
+    detect_options = df_filtered[~df_filtered['ikan'].str.contains('Zona Bahaya', case=False, na=False)][['ikan','lat','lon','skor']].copy()
+    detect_options['label'] = detect_options.apply(lambda r: f"{r['ikan']} — {r['lat']:.4f}, {r['lon']:.4f} — skor {r['skor']:.4f}", axis=1)
+    detect_map = dict(zip(detect_options['label'].tolist(), detect_options[['lat','lon']].values.tolist()))
+    sel_label = st.sidebar.selectbox('Pilih Titik Deteksi (daftar)', options=['-- Tidak memilih --'] + detect_options['label'].tolist())
+    if sel_label and sel_label != '-- Tidak memilih --':
+        if st.sidebar.button('➡️ Pilih Titik Ini dari Daftar'):
+            lat, lon = detect_map[sel_label]
+            st.session_state['pending_target'] = (float(lat), float(lon))
+            route_key = f"show_route_{selected_week}"
+            st.session_state[route_key] = True
+            st.sidebar.success('➡️ Tujuan otomatis diisi dari daftar')
+            st.experimental_rerun()
+except Exception:
+    pass
+
 # === SIDEBAR CONTROLS ===
 st.sidebar.header("🔍 Navigasi")
 
@@ -392,6 +398,11 @@ if loc is not None and "coords" in loc:
     default_start_lat = loc["coords"]["latitude"]
     default_start_lon = loc["coords"]["longitude"]
     st.sidebar.success("📍 GPS terdeteksi!")
+    # Populate session start coords from GPS if not set
+    if st.session_state.get('start_lat') is None:
+        st.session_state['start_lat'] = default_start_lat
+    if st.session_state.get('start_lon') is None:
+        st.session_state['start_lon'] = default_start_lon
 else:
     default_start_lat = df_filtered.lat.mean()
     default_start_lon = df_filtered.lon.mean()
@@ -399,32 +410,103 @@ else:
 
 # Input koordinat
 st.sidebar.subheader("📍 Posisi Awal")
+# Defensive defaults for coordinates in session_state
+if 'start_lat' not in st.session_state:
+    st.session_state['start_lat'] = None
+if 'start_lon' not in st.session_state:
+    st.session_state['start_lon'] = None
+if 'end_lat' not in st.session_state:
+    st.session_state['end_lat'] = None
+if 'end_lon' not in st.session_state:
+    st.session_state['end_lon'] = None
+
+# Helper to coerce floats safely
+def _safe_float_forecast(v, fallback):
+    # Try to coerce v first, then fallback. If both fail or are None, return 0.0
+    for candidate in (v, fallback):
+        try:
+            if candidate is None:
+                continue
+            return float(candidate)
+        except Exception:
+            continue
+    return 0.0
+
+# Compute safe start coords to avoid passing None to float()
+_start_val = st.session_state.get('start_lat')
+if _start_val is None:
+    _start_val = default_start_lat
+_start_val = _safe_float_forecast(_start_val, default_start_lat)
+_lon_val = st.session_state.get('start_lon')
+if _lon_val is None:
+    _lon_val = default_start_lon
+_lon_val = _safe_float_forecast(_lon_val, default_start_lon)
+
 start_lat = st.sidebar.number_input(
     "Latitude", 
-    value=float(default_start_lat), 
+    value=float(_start_val), 
     format="%.6f",
     key="start_lat"
 )
 start_lon = st.sidebar.number_input(
     "Longitude", 
-    value=float(default_start_lon), 
+    value=float(_lon_val), 
     format="%.6f",
     key="start_lon"
 )
 
+# Option: auto-fill tujuan fields when user clicks a point on the map
+auto_fill_on_click = st.sidebar.checkbox("Auto-fill Tujuan saat klik peta", value=True, key="auto_fill_on_click")
+
 st.sidebar.subheader("🎯 Tujuan")
+# Compute safe end coords
+_end_val = st.session_state.get('end_lat')
+if _end_val is None:
+    _end_val = float(df_filtered.lat.mean())
+_end_val = _safe_float_forecast(_end_val, float(df_filtered.lat.mean()))
+_end_lon_val = st.session_state.get('end_lon')
+if _end_lon_val is None:
+    _end_lon_val = float(df_filtered.lon.mean())
+_end_lon_val = _safe_float_forecast(_end_lon_val, float(df_filtered.lon.mean()))
+
 end_lat = st.sidebar.number_input(
     "Latitude", 
-    value=float(df_filtered.lat.mean()), 
+    value=float(_end_val), 
     format="%.6f",
     key="end_lat"
 )
 end_lon = st.sidebar.number_input(
     "Longitude", 
-    value=float(df_filtered.lon.mean()), 
+    value=float(_end_lon_val), 
     format="%.6f",
     key="end_lon"
 )
+
+# If a pending map target exists, copy it to sidebar Tujuan
+_pending = st.session_state.get('pending_target')
+if _pending:
+    try:
+        p_lat, p_lon = _pending
+        st.session_state['end_lat'] = float(p_lat)
+        st.session_state['end_lon'] = float(p_lon)
+        st.session_state['pending_target'] = None
+        st.sidebar.success("➡️ Tujuan otomatis diisi dari peta")
+        # update local variables so the UI shows immediately
+        end_lat = st.session_state['end_lat']
+        end_lon = st.session_state['end_lon']
+    except Exception:
+        pass
+
+with st.sidebar.expander("DEBUG - session_state", expanded=False):
+    st.write({
+        'gps_detected': st.session_state.get('gps_detected'),
+        'gps_lat': st.session_state.get('gps_lat'),
+        'gps_lon': st.session_state.get('gps_lon'),
+        'start_lat': st.session_state.get('start_lat'),
+        'start_lon': st.session_state.get('start_lon'),
+        'end_lat': st.session_state.get('end_lat'),
+        'end_lon': st.session_state.get('end_lon')
+    })
 
 if st.sidebar.button("🔄 Refresh GPS"):
     st.rerun()
@@ -468,7 +550,7 @@ with st.expander("🎛️ Kontrol Layer", expanded=True):
     
     st.markdown("---")
     st.markdown("**🧭 Rute**")
-    show_route = st.checkbox("Tampilkan Rute", value=True, key=f"show_route_{selected_week}")
+    show_route = st.checkbox("Tampilkan Rute", value=st.session_state.get(f"show_route_{selected_week}", True), key=f"show_route_{selected_week}")
 
 # === GENERATE MAP (RESPONSIVE SIZE) ===
 if basemap_option == "Esri Satellite":
@@ -478,8 +560,39 @@ else:
     tiles_url = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
     attr = "&copy; OpenStreetMap contributors"
 
-map_center = [(start_lat + end_lat) / 2, (start_lon + end_lon) / 2]
-m = folium.Map(location=map_center, zoom_start=8, tiles=None)
+_map_s_lat = _safe_float_forecast(st.session_state.get('start_lat', start_lat), start_lat)
+_map_s_lon = _safe_float_forecast(st.session_state.get('start_lon', start_lon), start_lon)
+_map_e_lat = _safe_float_forecast(st.session_state.get('end_lat', end_lat), end_lat)
+_map_e_lon = _safe_float_forecast(st.session_state.get('end_lon', end_lon), end_lon)
+
+# Prefer centering on the dataset's heatmap centroid (Java Sea area) unless a route is being shown.
+# Use a sensible default for Java Sea if dataset is empty or centroids are invalid.
+JAVA_SEA_CENTER = (-6.0, 111.0)
+try:
+    if not df_filtered.empty:
+        df_center_lat = float(df_filtered['lat'].mean())
+        df_center_lon = float(df_filtered['lon'].mean())
+    else:
+        df_center_lat, df_center_lon = JAVA_SEA_CENTER
+except Exception:
+    df_center_lat, df_center_lon = JAVA_SEA_CENTER
+
+# If user requested a route and both endpoints are valid, center on the route midpoint.
+use_route_center = False
+if show_route and all(isinstance(x, float) for x in [_map_s_lat, _map_s_lon, _map_e_lat, _map_e_lon]):
+    # Consider route center only when endpoints are non-trivial (not all zeros)
+    if not (_map_s_lat == 0 and _map_s_lon == 0 and _map_e_lat == 0 and _map_e_lon == 0):
+        use_route_center = True
+
+if use_route_center:
+    map_center = [(_map_s_lat + _map_e_lat) / 2, (_map_s_lon + _map_e_lon) / 2]
+    zoom_start = 9
+else:
+    map_center = [df_center_lat, df_center_lon]
+    # Wider zoom to show the Java Sea heatmap area
+    zoom_start = 7
+
+m = folium.Map(location=map_center, zoom_start=zoom_start, tiles=None)
 
 folium.TileLayer(tiles=tiles_url, attr=attr, name=basemap_option, control=True).add_to(m)
 
@@ -554,12 +667,16 @@ if show_bahaya_markers:
             icon=folium.Icon(color="red", icon="warning-sign")
         ).add_to(m)
 
-# Rute
-if show_route:
-    folium.Marker([start_lat, start_lon], popup="📍 Awal", icon=folium.Icon(color="green", icon="play")).add_to(m)
-    folium.Marker([end_lat, end_lon], popup="🎯 Tujuan", icon=folium.Icon(color="blue", icon="flag")).add_to(m)
+# Rute (guarded)
+_s_lat = _safe_float_forecast(st.session_state.get('start_lat', start_lat), start_lat)
+_s_lon = _safe_float_forecast(st.session_state.get('start_lon', start_lon), start_lon)
+_e_lat = _safe_float_forecast(st.session_state.get('end_lat', end_lat), end_lat)
+_e_lon = _safe_float_forecast(st.session_state.get('end_lon', end_lon), end_lon)
+if show_route and all(isinstance(x, float) for x in [_s_lat, _s_lon, _e_lat, _e_lon]):
+    folium.Marker([_s_lat, _s_lon], popup="📍 Awal", icon=folium.Icon(color="green", icon="play")).add_to(m)
+    folium.Marker([_e_lat, _e_lon], popup="🎯 Tujuan", icon=folium.Icon(color="blue", icon="flag")).add_to(m)
     folium.PolyLine(
-        locations=[[start_lat, start_lon], [end_lat, end_lon]],
+        locations=[[_s_lat, _s_lon], [_e_lat, _e_lon]],
         color="cyan",
         weight=4,
         opacity=0.8,
@@ -567,13 +684,61 @@ if show_route:
     ).add_to(m)
 
 # Tampilkan peta dengan ukuran responsif
-st_data = st_folium(m, width=None, height=500, key=f"map_{selected_month}_{selected_week}", returned_objects=[])
+st_data = st_folium(m, width=None, height=500, key=f"map_{selected_month}_{selected_week}", returned_objects=["last_clicked"])
+
+# Jika pengguna mengklik titik pada peta, tampilkan tombol "Menuju Titik Ini"
+clicked = None
+if isinstance(st_data, dict):
+    clicked = st_data.get('last_clicked')
+
+if clicked:
+    # streamlit-folium memberikan {'lat':..., 'lng':...}
+    try:
+        lat = float(clicked.get('lat'))
+        lon = float(clicked.get('lng'))
+        st.markdown(f"**Koordinat terpilih:** {lat:.6f}, {lon:.6f}")
+        if st.session_state.get('auto_fill_on_click', True):
+            st.session_state['pending_target'] = (lat, lon)
+            route_key = f"show_route_{selected_week}"
+            if st.session_state.get('start_lat') is None and st.session_state.get('gps_lat') is not None:
+                st.session_state['start_lat'] = st.session_state.get('gps_lat')
+            if st.session_state.get('start_lon') is None and st.session_state.get('gps_lon') is not None:
+                st.session_state['start_lon'] = st.session_state.get('gps_lon')
+            st.session_state[route_key] = True
+            st.session_state['route_just_set'] = True
+            st.experimental_rerun()
+        else:
+            if st.button("➡️ Menuju Titik Ini"):
+                st.session_state['pending_target'] = (lat, lon)
+                route_key = f"show_route_{selected_week}"
+                if st.session_state.get('start_lat') is None and st.session_state.get('gps_lat') is not None:
+                    st.session_state['start_lat'] = st.session_state.get('gps_lat')
+                if st.session_state.get('start_lon') is None and st.session_state.get('gps_lon') is not None:
+                    st.session_state['start_lon'] = st.session_state.get('gps_lon')
+                st.session_state[route_key] = True
+                st.session_state['route_just_set'] = True
+                st.experimental_rerun()
+    except Exception:
+        pass
+
+# Auto-refresh: tambahkan pilihan di sidebar (JS reload)
+auto_refresh = st.sidebar.checkbox("🔁 Auto Refresh", value=False)
+refresh_interval = st.sidebar.number_input("Interval refresh (detik)", min_value=5, max_value=600, value=30, step=5)
+if auto_refresh:
+    from streamlit.components.v1 import html as st_html
+    # reload halaman setelah interval (client-side)
+    st_html(f"<script>setTimeout(()=>location.reload(), {int(refresh_interval)*1000});</script>", height=0)
 
 # === INFO PANEL (RESPONSIVE) ===
 st.markdown("---")
 
 with st.expander("ℹ️ Informasi Koordinat", expanded=False):
-    distance_km = ((end_lat-start_lat)**2 + (end_lon-start_lon)**2)**0.5 * 111
+    # Safely coerce coordinates to floats for presentation and distance calc
+    _s_lat = _safe_float_forecast(st.session_state.get('start_lat', start_lat), start_lat)
+    _s_lon = _safe_float_forecast(st.session_state.get('start_lon', start_lon), start_lon)
+    _e_lat = _safe_float_forecast(st.session_state.get('end_lat', end_lat), end_lat)
+    _e_lon = _safe_float_forecast(st.session_state.get('end_lon', end_lon), end_lon)
+    distance_km = ((_e_lat-_s_lat)**2 + (_e_lon-_s_lon)**2)**0.5 * 111
     st.info(f"""
     **Periode:** {week_dates[selected_week-1]}
     
@@ -581,9 +746,9 @@ with st.expander("ℹ️ Informasi Koordinat", expanded=False):
     
     **Basemap:** {basemap_option}
     
-    **Posisi Awal:** {start_lat:.6f}, {start_lon:.6f}
+    **Posisi Awal:** {_s_lat:.6f}, {_s_lon:.6f}
     
-    **Tujuan:** {end_lat:.6f}, {end_lon:.6f}
+    **Tujuan:** {_e_lat:.6f}, {_e_lon:.6f}
     
     **Jarak:** ≈ {distance_km:.1f} km
     """)
