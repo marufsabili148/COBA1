@@ -1,9 +1,14 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime
-from supabase import create_client, Client
+try:
+    from supabase import create_client, Client
+    SUPABASE_AVAILABLE = True
+except Exception:
+    SUPABASE_AVAILABLE = False
 from streamlit_option_menu import option_menu
 import json
+import os
 
 # === KONFIGURASI HALAMAN ===
 st.set_page_config(
@@ -13,14 +18,18 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# === SUPABASE CONFIGURATION ===
+# === SUPABASE CONFIGURATION (optional) ===
 SUPABASE_URL = "https://kkeiwnrziuisnrloltwh.supabase.co"
-SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtrZWl3bnJ6aXVpc25ybG9sdHdoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk2MjU4NDAsImV4cCI6MjA3NTIwMTg0MH0.v9tF5xmhxTFi2SRYrh-UwdtErYXJOYjU1EZ_UvUAtbk"
+SUPABASE_KEY = "REDACTED_OR_MISSING"
 
-try:
-    supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
-except Exception as e:
-    st.error(f"Error koneksi Supabase: {e}")
+if SUPABASE_AVAILABLE:
+    try:
+        supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+    except Exception as e:
+        st.warning(f"Supabase tersedia tapi tidak dapat terkoneksi: {e} -- akan menggunakan penyimpanan lokal sebagai fallback.")
+        SUPABASE_AVAILABLE = False
+else:
+    st.info("Supabase library tidak ditemukan; feedback akan disimpan secara lokal (feedback_backup.json)")
 
 # === CUSTOM CSS ===
 st.markdown("""
@@ -155,56 +164,44 @@ st.markdown("""
 # === SESSION STATE ===
 if 'current_page' not in st.session_state:
     st.session_state.current_page = 'Feedback'
+    st.session_state.current_page = 'Feedback'  # Ensure menu indicator syncs on load
 
-# === NAVIGATION ===
+# === NAVIGATION (UNIFIED ACROSS PAGES) ===
+nav_options = ["Beranda", "Deteksi Zona Ikan", "Prediksi 30 Hari", "Tutorial", "Tentang", "Feedback"]
+current = st.session_state.get('current_page', 'Feedback')
+default_index = nav_options.index(current) if current in nav_options else nav_options.index('Feedback')
 selected = option_menu(
     menu_title=None,
-    options=["Beranda", "Deteksi Zona Ikan", "Prediksi 30 Hari", "Tutorial", "Tentang", "Feedback"],
+    options=nav_options,
     icons=["house", "map", "graph-up", "book", "info-circle", "chat-dots"],
     menu_icon="cast",
-    default_index=5,  # Feedback is at index 5
+    default_index=default_index,
     orientation="horizontal",
+    key="main_nav",
     styles={
-        "container": {
-            "padding": "0", 
-            "background-color": "transparent", 
-            "border-bottom": "1px solid #e1e4e8"
-        },
-        "icon": {
-            "color": "#586069", 
-            "font-size": "clamp(14px, 3vw, 16px)"
-        },
-        "nav-link": {
-            "font-size": "clamp(0.75rem, 2vw, 0.95rem)",
-            "text-align": "center",
-            "margin": "0",
-            "padding": "clamp(10px, 2vw, 14px) clamp(12px, 3vw, 24px)",
-            "color": "#24292e",
-            "font-weight": "500",
-            "border-bottom": "3px solid transparent",
-            "--hover-color": "#f6f8fa",
-            "font-family": "Inter, sans-serif",
-        },
-        "nav-link-selected": {
-            "background-color": "transparent",
-            "border-bottom": "3px solid #0e4194",
-            "color": "#0e4194",
-        },
+        "container": {"padding": "0", "background-color": "transparent", "border-bottom": "1px solid #e1e4e8"},
+        "icon": {"color": "#586069", "font-size": "clamp(14px, 3vw, 16px)"},
+        "nav-link": {"font-size": "clamp(0.75rem, 2vw, 0.95rem)", "text-align": "center", "margin": "0", "padding": "clamp(10px, 2vw, 14px) clamp(12px, 3vw, 24px)", "color": "#24292e", "font-weight": "500", "border-bottom": "3px solid transparent", "--hover-color": "#f6f8fa", "font-family": "Inter, sans-serif"},
+        "nav-link-selected": {"background-color": "transparent", "border-bottom": "3px solid #0e4194", "color": "#0e4194"},
     }
 )
 
-# Handle navigation to other pages
-if selected == "Beranda":
-    st.switch_page("home.py")
-elif selected == "Deteksi Zona Ikan":
-    st.switch_page("pages/hasil_deteksi.py")
-elif selected == "Prediksi 30 Hari":
-    st.switch_page("pages/forecast.py")
-elif selected == "Tutorial":
-    st.switch_page("home.py")
-elif selected == "Tentang":
-    st.switch_page("home.py")
+# Only switch page if user clicked a different option than current
+if selected != st.session_state.get('current_page', 'Feedback'):
+    # update state first so the menu indicator follows the page change
+    st.session_state.current_page = selected
+    if selected == "Beranda":
+        st.switch_page("home.py")
+    elif selected == "Deteksi Zona Ikan":
+        st.switch_page("pages/hasil_deteksi.py")
+    elif selected == "Prediksi 30 Hari":
+        st.switch_page("pages/forecast.py")
+    elif selected == "Tutorial":
+        st.switch_page("pages/tutorial.py")
+    elif selected == "Tentang":
+        st.switch_page("home.py")
 
+# keep session state in sync
 st.session_state.current_page = selected
 
 # === PAGE HEADER ===
@@ -421,23 +418,56 @@ with st.form("feedback_form", clear_on_submit=True):
                 "created_at": datetime.now().isoformat()
             }
             
-            try:
-                # Kirim ke Supabase
-                response = supabase.table("feedback_nelayan").insert(feedback_data).execute()
-                
-                st.markdown("""
-                <div class="success-box">
-                    <h3 style="margin-top: 0;">✅ Feedback Berhasil Dikirim!</h3>
-                    <p>Terima kasih atas kontribusi Anda untuk pengembangan aplikasi SAILOR.</p>
-                    <p>Data Anda akan sangat membantu kami meningkatkan akurasi prediksi zona ikan.</p>
-                </div>
-                """, unsafe_allow_html=True)
-                
-                st.balloons()
-                
-            except Exception as e:
-                st.error(f"Terjadi kesalahan saat mengirim data: {str(e)}")
-                st.info("Silakan coba lagi atau hubungi tim pengembang jika masalah berlanjut.")
+            if SUPABASE_AVAILABLE:
+                try:
+                    response = supabase.table("feedback_nelayan").insert(feedback_data).execute()
+                    st.markdown("""
+                    <div class="success-box">
+                        <h3 style="margin-top: 0;">✅ Feedback Berhasil Dikirim ke Supabase!</h3>
+                        <p>Terima kasih atas kontribusi Anda untuk pengembangan aplikasi SAILOR.</p>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    st.balloons()
+                except Exception as e:
+                    st.error(f"Terjadi kesalahan saat mengirim data ke Supabase: {str(e)}")
+                    st.info("Menyimpan data secara lokal sebagai fallback.")
+                    # fallback to local save
+                    backup_path = os.path.join(os.path.dirname(__file__), '..', 'feedback_backup.json')
+                    backup_path = os.path.abspath(backup_path)
+                    try:
+                        if os.path.exists(backup_path):
+                            with open(backup_path, 'r', encoding='utf-8') as bf:
+                                arr = json.load(bf)
+                        else:
+                            arr = []
+                        arr.append(feedback_data)
+                        with open(backup_path, 'w', encoding='utf-8') as bf:
+                            json.dump(arr, bf, ensure_ascii=False, indent=2)
+                        st.success(f"Feedback disimpan lokal di: {backup_path}")
+                    except Exception as e2:
+                        st.error(f"Gagal menyimpan cadangan lokal: {e2}")
+            else:
+                # Save locally when supabase not available
+                backup_path = os.path.join(os.path.dirname(__file__), '..', 'feedback_backup.json')
+                backup_path = os.path.abspath(backup_path)
+                try:
+                    if os.path.exists(backup_path):
+                        with open(backup_path, 'r', encoding='utf-8') as bf:
+                            arr = json.load(bf)
+                    else:
+                        arr = []
+                    arr.append(feedback_data)
+                    with open(backup_path, 'w', encoding='utf-8') as bf:
+                        json.dump(arr, bf, ensure_ascii=False, indent=2)
+                    st.markdown("""
+                    <div class="success-box">
+                        <h3 style="margin-top: 0;">✅ Feedback Berhasil Disimpan (Lokal)</h3>
+                        <p>Supabase tidak tersedia; data Anda telah disimpan secara lokal.</p>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    st.balloons()
+                except Exception as e2:
+                    st.error(f"Gagal menyimpan feedback lokal: {e2}")
 
 # === FOOTER INFO ===
 st.markdown("---")
