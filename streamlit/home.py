@@ -1,5 +1,7 @@
 import streamlit as st
 from streamlit_option_menu import option_menu
+import os
+import base64
 
 
 # === KONFIGURASI HALAMAN ===
@@ -9,6 +11,9 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="collapsed"
 )
+
+# Explicitly set current page for consistent menu indicator
+st.session_state.current_page = 'Beranda'
 
 # === CUSTOM CSS - RESPONSIVE & INTER FONT ===
 st.markdown("""
@@ -353,10 +358,6 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# === SESSION STATE ===
-if 'current_page' not in st.session_state:
-    st.session_state.current_page = 'Beranda'
-
 # === NAVIGATION - RESPONSIVE ===
 selected = option_menu(
     menu_title=None,
@@ -365,6 +366,7 @@ selected = option_menu(
     menu_icon="cast",
     default_index=["Beranda", "Deteksi Zona Ikan", "Prediksi 30 Hari", "Tutorial", "Tentang"].index(st.session_state.current_page),
     orientation="horizontal",
+    key="main_nav",
     styles={
         "container": {
             "padding": "0", 
@@ -396,10 +398,13 @@ selected = option_menu(
 
 # Handle navigation to other pages
 if selected == "Deteksi Zona Ikan":
+    st.session_state.current_page = selected
     st.switch_page("pages/hasil_deteksi.py")
 elif selected == "Prediksi 30 Hari":
+    st.session_state.current_page = selected
     st.switch_page("pages/forecast.py")
 elif selected == "Feedback":
+    st.session_state.current_page = selected
     st.switch_page("pages/feedback.py")
 
 st.session_state.current_page = selected
@@ -407,14 +412,25 @@ st.session_state.current_page = selected
 # === HALAMAN BERANDA ===
 if selected == "Beranda":
     # Hero Section
-    st.markdown("""
+    # Try to load the local image and embed it as a base64 data URI so it renders inside the hero HTML
+    image_path = os.path.join(os.path.dirname(__file__), "img", "sailor.png")
+    try:
+        with open(image_path, "rb") as f:
+            b64 = base64.b64encode(f.read()).decode()
+        # Perbesar sedikit supaya lebih proporsional di layout
+        img_tag = f'<img src="data:image/png;base64,{b64}" alt="SAILOR" style="max-width:360px; width:55%; height:auto; margin-bottom:1rem;" />'
+    except Exception:
+        # Fallback to text if the image can't be read
+        img_tag = '<h1 class="hero-title">SAILOR</h1>'
+
+    st.markdown(f"""
     <div class="hero-container">
         <div class="hero-content">
-            <h1 class="hero-title">SAILOR</h1>
-            <p class="hero-subtitle">Satellite-based AI Intelligent Localization Optimization Resources</p>
+            {img_tag}
+            <p class="hero-subtitle">Sumber Daya Optimasi Lokasi Cerdas Berbasis Satelit</p>
             <p class="hero-description">
-                A comprehensive fish detection system utilizing satellite data and artificial intelligence 
-                to identify optimal fishing zones in the Java Sea
+                Sistem deteksi zona ikan yang memanfaatkan data satelit dan kecerdasan buatan
+                untuk mengidentifikasi zona penangkapan ikan yang potensial di Laut Jawa
             </p>
         </div>
     </div>
@@ -423,7 +439,7 @@ if selected == "Beranda":
     # CTA Button
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        if st.button("Start Fish Zone Detection", use_container_width=True):
+        if st.button("Mulai Deteksi Zona Ikan", use_container_width=True):
             st.switch_page("pages/hasil_deteksi.py")
     
     # Stats Section
@@ -431,18 +447,18 @@ if selected == "Beranda":
     
     st.markdown("""
     <div class="stats-container">
-        <div class="stat-card">
-            <span class="stat-number">12.01M</span>
-            <span class="stat-label">Tons of Fish Potential per Year</span>
-        </div>
-        <div class="stat-card">
-            <span class="stat-number">Real-Time</span>
-            <span class="stat-label">Copernicus Satellite Data</span>
-        </div>
-        <div class="stat-card">
-            <span class="stat-number">6 Species</span>
-            <span class="stat-label">Pelagic Fish Detected</span>
-        </div>
+            <div class="stat-card">
+                <span class="stat-number">12.01M</span>
+                <span class="stat-label">Perkiraan Potensi Ikan (ton/tahun)</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number">Real-Time</span>
+                <span class="stat-label">Data Satelit Copernicus</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number">6 Jenis</span>
+                <span class="stat-label">Jenis Ikan Pelagis Terdeteksi</span>
+            </div>
     </div>
     """, unsafe_allow_html=True)
     
@@ -564,69 +580,69 @@ if selected == "Beranda":
 
 # === HALAMAN TUTORIAL ===
 elif selected == "Tutorial":
-    st.markdown('<h1 class="section-header">User Guide</h1>', unsafe_allow_html=True)
-    st.markdown("Complete guide to using SAILOR system")
+    st.markdown('<h1 class="section-header">Panduan Pengguna</h1>', unsafe_allow_html=True)
+    st.markdown("Panduan singkat penggunaan sistem SAILOR untuk membantu Anda memulai.")
     
-    with st.expander("1. Accessing Fish Zone Detection Page", expanded=True):
+    with st.expander("1. Mengakses Halaman Deteksi Zona Ikan", expanded=True):
         st.markdown("""
-        **Steps:**
-        1. Select **'Deteksi Zona Ikan'** from the navigation menu
-        2. Wait for the interactive map to load
-        3. Use checkboxes to select fish species to display
-        4. Use layer control to enable/disable hazard zones
+        **Langkah-langkah:**
+        1. Pilih menu **'Deteksi Zona Ikan'** dari navigasi
+        2. Tunggu sampai peta interaktif selesai dimuat
+        3. Gunakan kotak centang untuk memilih jenis ikan yang ingin ditampilkan
+        4. Gunakan kontrol layer untuk mengaktifkan/mematikan zona bahaya
         """)
     
-    with st.expander("2. Using GPS Navigation"):
+    with st.expander("2. Menggunakan Navigasi GPS"):
         st.markdown("""
-        **Steps:**
-        1. Click on a coordinate point on the map you want to reach
-        2. Coordinates automatically fill in the 'Target Coordinates' field
-        3. Initial position is automatically detected from your device GPS
-        4. Enable **'Auto Refresh GPS'** toggle for automatic updates
-        5. Or use **'Refresh GPS'** button for manual updates
+        **Langkah-langkah:**
+        1. Klik pada titik koordinat di peta yang ingin Anda tuju
+        2. Koordinat akan otomatis terisi pada kolom 'Koordinat Tujuan'
+        3. Posisi awal otomatis terdeteksi dari GPS perangkat Anda
+        4. Aktifkan toggle **'Gunakan GPS'** untuk pembaruan otomatis
+        5. Atau gunakan tombol **'Refresh GPS'** untuk pembaruan manual
         """)
     
-    with st.expander("3. Viewing 30-Day Predictions"):
+    with st.expander("3. Melihat Prediksi 30 Hari"):
         st.markdown("""
-        **Steps:**
-        1. Select **'Prediksi 30 Hari'** from the navigation menu
-        2. Choose the month and week you want to view
-        3. System will display predictions automatically
-        4. Select fish species using filters
-        5. Download data in CSV format if needed
+        **Langkah-langkah:**
+        1. Pilih **'Prediksi 30 Hari'** dari menu navigasi
+        2. Pilih bulan dan minggu yang ingin ditampilkan
+        3. Sistem akan menampilkan prediksi secara otomatis
+        4. Pilih jenis ikan menggunakan filter yang tersedia
+        5. Unduh data dalam format CSV jika diperlukan
         """)
     
-    with st.expander("4. Understanding Hazard Zones"):
+    with st.expander("4. Memahami Zona Bahaya"):
         st.markdown("""
-        **Hazard Zone Indicators:**
-        - **High Waves**: Hs > 2.5 meters (dangerous for fishing)
-        - **Shallow Waters**: Depth < 10 meters (risk of grounding)
+        **Indikator Zona Bahaya:**
+        - **Gelombang Tinggi**: Hs > 2.5 meter (berbahaya untuk penangkapan)
+        - **Perairan Dangkal**: Kedalaman < 10 meter (risiko kandas)
         
-        Hazard zones are marked in red on the map. Avoid these areas when fishing.
+        Zona bahaya ditandai dengan warna merah pada peta. Hindari area ini saat melaut.
         """)
     
-    with st.expander("5. Parameters Used"):
+    with st.expander("5. Parameter yang Digunakan"):
         st.markdown("""
-        **Oceanographic Parameters:**
-        - **Sea Surface Temperature (SST/thetao)**: Determines fish habitat
-        - **Chlorophyll-a (chl)**: Indicator of primary productivity/fish food
-        - **Wave Height (Hs)**: For hazard zone detection
-        - **Depth (deptho)**: For shallow water detection
+        **Parameter Oseanografi:**
+        - **Suhu Permukaan Laut (SST/thetao)**: Menentukan habitat ikan
+        - **Klorofil-a (chl)**: Indikator produktivitas primer/makanan ikan
+        - **Tinggi Gelombang (Hs)**: Untuk deteksi zona bahaya
+        - **Kedalaman (deptho)**: Untuk deteksi perairan dangkal
         """)
     
-    st.markdown('<h2 class="section-header">Frequently Asked Questions</h2>', unsafe_allow_html=True)
+    st.markdown('<h2 class="section-header">Pertanyaan yang Sering Diajukan</h2>', unsafe_allow_html=True)
     
-    with st.expander("Is SAILOR free to use?"):
-        st.markdown("Yes, SAILOR is completely free for fishermen and fisheries stakeholders.")
+    with st.expander("Apakah SAILOR gratis digunakan?"):
+        st.markdown("Ya, SAILOR disediakan sebagai demo gratis untuk nelayan dan pemangku kepentingan perikanan.")
     
-    with st.expander("How accurate are SAILOR predictions?"):
-        st.markdown("Our Random Forest model has RMSE 0.002816 and MAE 0.002245, indicating high prediction accuracy.")
+    with st.expander("Seberapa akurat prediksi SAILOR?"):
+        st.markdown("Model Random Forest yang digunakan menunjukkan RMSE 0.002816 dan MAE 0.002245, mengindikasikan akurasi prediksi yang baik.")
     
-    with st.expander("Can it be used outside the Java Sea?"):
-        st.markdown("Currently SAILOR only supports the Java Sea region. Development for other regions is planned.")
+    with st.expander("Dapatkah digunakan di luar Laut Jawa?"):
+        st.markdown("Saat ini SAILOR mendukung wilayah Laut Jawa. Pengembangan untuk wilayah lain direncanakan di masa mendatang.")
     
-    with st.expander("What if GPS is not detected?"):
-        st.markdown("Ensure your browser has location access permissions. You can also input coordinates manually.")
+    with st.expander("Apa yang harus dilakukan jika GPS tidak terdeteksi?"):
+        st.markdown("Pastikan perizinan lokasi pada browser diberikan. Anda juga dapat memasukkan koordinat secara manual.")
 
 # === HALAMAN TENTANG ===
 elif selected == "Tentang":
