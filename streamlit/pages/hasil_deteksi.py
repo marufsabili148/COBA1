@@ -84,28 +84,32 @@ st.markdown("""
         font-weight: 500;
         border-radius: 4px;
         transition: all 0.2s ease;
-        width: 100%;
-        font-family: 'Inter', sans-serif !important;
-    }
-    
-    .stButton > button:hover {
-        background-color: #0a3275;
-        box-shadow: 0 4px 8px rgba(14, 65, 148, 0.2);
-    }
-    
-    /* Section Headers - Responsive */
-    .section-header {
-        font-size: clamp(1.3rem, 3.5vw, 1.5rem) !important;
-        font-weight: 600 !important;
-        color: #24292e;
-        margin: clamp(1.5rem, 3vw, 2rem) 0 clamp(0.75rem, 2vw, 1rem) 0;
-        padding-bottom: 0.5rem;
-        border-bottom: 2px solid #0e4194;
-        font-family: 'Inter', sans-serif !important;
-    }
-    
-    /* Info Boxes - Responsive */
-    .info-box {
+        with col1:
+            st.markdown('<div class="control-card">', unsafe_allow_html=True)
+            # Gunakan expander agar bisa klik buka/tutup seperti accordion
+            with st.expander('🔥 Layer Heatmap', expanded=False):
+                st.write('Pilih layer heatmap yang ingin ditampilkan:')
+                # opsi per-jenis
+                heatmap_mode = st.radio(
+                    'Mode Heatmap',
+                    ['Semua', 'Per Jenis', 'Zona Bahaya'],
+                    index=0,
+                    key='heatmap_mode_radio'
+                )
+
+                heatmap_toggles = {}
+                if heatmap_mode in ('Semua', 'Per Jenis'):
+                    st.write('Pilih jenis ikan untuk heatmap:')
+                    for ikan in ikan_types_clean:
+                        default_val = True if heatmap_mode == 'Semua' else True
+                        heatmap_toggles[ikan] = st.checkbox(f'{ikan}', value=default_val, key=f'heat_{ikan}')
+
+                # Toggle untuk heatmap zona bahaya
+                if heatmap_mode == 'Zona Bahaya':
+                    show_bahaya_heatmap = True
+                else:
+                    show_bahaya_heatmap = st.checkbox('🌊 Zona Bahaya', value=True, key='heat_bahaya')
+            st.markdown('</div>', unsafe_allow_html=True)
         background: #f6f8fa;
         border-left: 4px solid #0e4194;
         padding: clamp(1rem, 2.5vw, 1.5rem);
@@ -179,33 +183,32 @@ st.markdown("""
     }
     
     /* Checkbox */
-    .stCheckbox {
-        padding: 0.25rem 0;
-    }
-    
-    .stCheckbox label {
-        font-family: 'Inter', sans-serif !important;
-        font-size: clamp(0.85rem, 2vw, 0.95rem) !important;
-    }
-    
-    /* Typography */
-    h1, h2, h3, h4, h5, h6 {
-        color: #24292e;
-        font-family: 'Inter', sans-serif !important;
-    }
-    
-    p, span, div, label {
-        font-family: 'Inter', sans-serif !important;
-    }
-    
-    /* Sidebar Headers */
-    .sidebar .sidebar-content h2, .sidebar .sidebar-content h3 {
-        color: #0e4194;
-        font-weight: 600 !important;
-        font-family: 'Inter', sans-serif !important;
-        font-size: clamp(1rem, 2.5vw, 1.2rem) !important;
-    }
-    
+    with col2:
+        st.markdown('<div class="control-card">', unsafe_allow_html=True)
+        # Expander untuk Marker Ikan (klik untuk buka/tutup)
+        with st.expander('📍 Marker Ikan', expanded=False):
+            st.write('Pengaturan marker titik hasil deteksi:')
+            marker_mode = st.radio(
+                'Mode Marker',
+                ['Semua', 'Per Jenis', 'Tidak ada'],
+                index=0,
+                key='marker_mode_radio'
+            )
+
+            show_ikan_markers = False
+            marker_ikan_toggles = {}
+            if marker_mode == 'Semua':
+                show_ikan_markers = True
+                for ikan in ikan_types_clean:
+                    marker_ikan_toggles[ikan] = True
+            elif marker_mode == 'Per Jenis':
+                show_ikan_markers = True
+                st.write('Pilih jenis ikan yang ingin ditampilkan marker:')
+                for ikan in ikan_types_clean:
+                    marker_ikan_toggles[ikan] = st.checkbox(f'• {ikan}', value=True, key=f'marker_{ikan}')
+            else:
+                show_ikan_markers = False
+        st.markdown('</div>', unsafe_allow_html=True)
     /* Mobile Optimization */
     @media (max-width: 768px) {
         .page-header {
@@ -214,6 +217,8 @@ st.markdown("""
         }
         
         .control-card {
+        # Ensure menu indicator syncs on load
+        st.session_state.current_page = 'Deteksi Zona Ikan'
             padding: 1rem;
         }
     }
@@ -224,66 +229,47 @@ st.markdown("""
 if 'current_page' not in st.session_state:
     st.session_state.current_page = 'Deteksi Zona Ikan'
 
-# === NAVIGATION (CONSISTENT WITH HOME.PY) ===
+# === NAVIGATION - single option_menu with unique key ===
+nav_options = ["Beranda", "Deteksi Zona Ikan", "Prediksi 30 Hari", "Tutorial", "Tentang", "Feedback"]
+current = st.session_state.get('current_page', 'Deteksi Zona Ikan')
+default_index = nav_options.index(current) if current in nav_options else nav_options.index('Deteksi Zona Ikan')
 selected = option_menu(
     menu_title=None,
-    options=["Beranda", "Deteksi Zona Ikan", "Prediksi 30 Hari", "Tutorial", "Tentang"],
-    icons=["house", "map", "graph-up", "book", "info-circle"],
+    options=nav_options,
+    icons=["house", "map", "graph-up", "book", "info-circle", "chat-dots"],
     menu_icon="cast",
-    default_index=1,
+    default_index=default_index,
     orientation="horizontal",
+    key="main_nav",
     styles={
-        "container": {
-            "padding": "0", 
-            "background-color": "transparent", 
-            "border-bottom": "1px solid #e1e4e8"
-        },
-        "icon": {
-            "color": "#586069", 
-            "font-size": "clamp(14px, 3vw, 16px)"
-        },
-        "nav-link": {
-            "font-size": "clamp(0.75rem, 2vw, 0.95rem)",
-            "text-align": "center",
-            "margin": "0",
-            "padding": "clamp(10px, 2vw, 14px) clamp(12px, 3vw, 24px)",
-            "color": "#24292e",
-            "font-weight": "500",
-            "border-bottom": "3px solid transparent",
-            "--hover-color": "#f6f8fa",
-            "font-family": "Inter, sans-serif",
-        },
-        "nav-link-selected": {
-            "background-color": "transparent",
-            "border-bottom": "3px solid #0e4194",
-            "color": "#0e4194",
-        },
+        "container": {"padding": "0", "background-color": "transparent", "border-bottom": "1px solid #e1e4e8"},
+        "icon": {"color": "#586069", "font-size": "clamp(14px, 3vw, 16px)"},
+        "nav-link": {"font-size": "clamp(0.75rem, 2vw, 0.95rem)", "text-align": "center", "margin": "0", "padding": "clamp(10px, 2vw, 14px) clamp(12px, 3vw, 24px)", "color": "#24292e", "font-weight": "500", "border-bottom": "3px solid transparent", "--hover-color": "#f6f8fa", "font-family": "Inter, sans-serif"},
+        "nav-link-selected": {"background-color": "transparent", "border-bottom": "3px solid #0e4194", "color": "#0e4194"},
     }
 )
 
-# Handle navigation
-if selected == "Beranda":
-    st.switch_page("home.py")
-elif selected == "Prediksi 30 Hari":
-    st.switch_page("pages/forecast.py")
-elif selected == "Tutorial":
-    st.switch_page("home.py")
-elif selected == "Tentang":
-    st.switch_page("home.py")
+# Only switch if user selected a different page
+if selected != st.session_state.get('current_page', 'Deteksi Zona Ikan'):
+    st.session_state.current_page = selected
+    if selected == "Beranda":
+        st.switch_page("home.py")
+    elif selected == "Deteksi Zona Ikan":
+        pass
+    elif selected == "Prediksi 30 Hari":
+        st.switch_page("pages/forecast.py")
+    elif selected == "Tutorial":
+        st.switch_page("pages/tutorial.py")
+    elif selected == "Tentang":
+        st.switch_page("home.py")
+    elif selected == "Feedback":
+        st.switch_page("pages/feedback.py")
 
-# === PAGE HEADER ===
-st.markdown("""
-<div class="page-header">
-    <h1 class="page-title">🌊 Deteksi Zona Ikan Real-Time</h1>
-    <p class="page-subtitle">Visualisasi peta interaktif zona potensi ikan dan area berbahaya</p>
-</div>
-""", unsafe_allow_html=True)
+st.session_state.current_page = selected
 
 # === MAPPING CSV FILES (RELATIVE PATH) ===
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-# Naik 1 level dari pages/ ke streamlit/
 PROJECT_ROOT = os.path.dirname(BASE_DIR)
-# CSV ada di dalam streamlit/csv
 csv_files = {
     1: os.path.join(PROJECT_ROOT, "csv", "fish_potential_variant_1.csv"),
     2: os.path.join(PROJECT_ROOT, "csv", "fish_potential_variant_2.csv"), 
@@ -294,13 +280,10 @@ csv_files = {
 # Default: gunakan variant 1
 csv_path = csv_files[1]
 
-# Baca CSV
-df = pd.read_csv(csv_path)
-
-# Validasi kolom wajib
-required_cols = {"lat", "lon", "skor", "ikan"}
-if not required_cols.issubset(df.columns):
-    st.error(f"CSV harus mengandung kolom: {required_cols}")
+try:
+    df = pd.read_csv(csv_path)
+except Exception as e:
+    st.error(f"Gagal membaca file CSV: {e}")
     st.stop()
 
 # Tambahkan alasan sederhana
@@ -338,6 +321,30 @@ if 'gps_lon' not in st.session_state:
 if 'gps_detected' not in st.session_state:
     st.session_state.gps_detected = False
 
+# Defensive: ensure start/end and route keys exist and are coercible to float/bool
+if 'start_lat' not in st.session_state:
+    st.session_state['start_lat'] = None
+if 'start_lon' not in st.session_state:
+    st.session_state['start_lon'] = None
+if 'end_lat' not in st.session_state:
+    st.session_state['end_lat'] = None
+if 'end_lon' not in st.session_state:
+    st.session_state['end_lon'] = None
+if 'show_route' not in st.session_state:
+    st.session_state['show_route'] = True
+
+# Helper to coerce floats safely
+def _safe_float(v, fallback):
+    # Try to coerce v first, then fallback. If both fail or are None, return 0.0
+    for candidate in (v, fallback):
+        try:
+            if candidate is None:
+                continue
+            return float(candidate)
+        except Exception:
+            continue
+    return 0.0
+
 # Ambil GPS live user
 loc = get_geolocation()
 if loc is not None and "coords" in loc:
@@ -347,6 +354,11 @@ if loc is not None and "coords" in loc:
     st.session_state.gps_detected = True
     st.sidebar.success("📍 GPS berhasil terdeteksi!")
     st.sidebar.info(f"Lat: {st.session_state.gps_lat:.6f}, Lon: {st.session_state.gps_lon:.6f}")
+    # If start coordinates haven't been set by user yet, populate them from GPS
+    if st.session_state.get('start_lat') is None:
+        st.session_state['start_lat'] = st.session_state.gps_lat
+    if st.session_state.get('start_lon') is None:
+        st.session_state['start_lon'] = st.session_state.gps_lon
 else:
     if not st.session_state.gps_detected:
         st.sidebar.warning("⚠️ GPS tidak terdeteksi, menggunakan koordinat default")
@@ -363,36 +375,85 @@ else:
 st.sidebar.markdown("#### 📍 Posisi Awal")
 st.sidebar.caption("GPS terdeteksi - ubah manual jika perlu" if st.session_state.gps_detected else "Masukkan koordinat manual")
 
+# Compute safe start coords (avoid None)
+_start_val = st.session_state.get('start_lat')
+if _start_val is None:
+    _start_val = default_start_lat
+_start_val = _safe_float(_start_val, default_start_lat)
+_lon_val = st.session_state.get('start_lon')
+if _lon_val is None:
+    _lon_val = default_start_lon
+_lon_val = _safe_float(_lon_val, default_start_lon)
+
+# If a pending target was set by a map click, move it into the sidebar 'Tujuan' fields now
+_pending = st.session_state.get('pending_target')
+if _pending:
+    try:
+        p_lat, p_lon = _pending
+        st.session_state['end_lat'] = float(p_lat)
+        st.session_state['end_lon'] = float(p_lon)
+        # clear pending flag
+        st.session_state['pending_target'] = None
+        st.sidebar.success("➡️ Tujuan otomatis diisi dari peta")
+    except Exception:
+        pass
+
 start_lat = st.sidebar.number_input(
     "Latitude", 
-    value=float(default_start_lat), 
+    value=float(_start_val), 
     format="%.6f",
     help="Koordinat latitude posisi Anda saat ini (terisi otomatis dari GPS)",
     key="start_lat"
 )
 start_lon = st.sidebar.number_input(
     "Longitude", 
-    value=float(default_start_lon), 
+    value=float(_lon_val), 
     format="%.6f",
     help="Koordinat longitude posisi Anda saat ini (terisi otomatis dari GPS)",
     key="start_lon"
 )
 
+# Option: auto-fill tujuan fields when user clicks a point on the map
+auto_fill_on_click = st.sidebar.checkbox("Auto-fill Tujuan saat klik peta", value=True, key="auto_fill_on_click")
+
 st.sidebar.markdown("#### 🎯 Tujuan")
+# Compute safe end coords (avoid None)
+_end_val = st.session_state.get('end_lat')
+if _end_val is None:
+    _end_val = float(df_filtered.lat.mean())
+_end_val = _safe_float(_end_val, float(df_filtered.lat.mean()))
+_end_lon_val = st.session_state.get('end_lon')
+if _end_lon_val is None:
+    _end_lon_val = float(df_filtered.lon.mean())
+_end_lon_val = _safe_float(_end_lon_val, float(df_filtered.lon.mean()))
+
 end_lat = st.sidebar.number_input(
     "Latitude", 
-    value=float(df_filtered.lat.mean()), 
+    value=float(_end_val), 
     format="%.6f",
     help="Koordinat latitude tujuan",
     key="end_lat"
 )
 end_lon = st.sidebar.number_input(
     "Longitude", 
-    value=float(df_filtered.lon.mean()), 
+    value=float(_end_lon_val), 
     format="%.6f",
     help="Koordinat longitude tujuan",
     key="end_lon"
 )
+
+# Debug panel to inspect session state during interactive testing
+with st.sidebar.expander("DEBUG - session_state", expanded=False):
+    st.write({
+        'gps_detected': st.session_state.get('gps_detected'),
+        'gps_lat': st.session_state.get('gps_lat'),
+        'gps_lon': st.session_state.get('gps_lon'),
+        'start_lat': st.session_state.get('start_lat'),
+        'start_lon': st.session_state.get('start_lon'),
+        'end_lat': st.session_state.get('end_lat'),
+        'end_lon': st.session_state.get('end_lon'),
+        'show_route': st.session_state.get('show_route')
+    })
 
 col_btn1, col_btn2 = st.sidebar.columns(2)
 with col_btn1:
@@ -424,25 +485,49 @@ with col1:
     ikan_types = df_filtered['ikan'].unique()
     ikan_types_clean = [ikan for ikan in ikan_types if "Zona Bahaya" not in ikan]
     
+    # Dropdown untuk memilih layer heatmap: Semua / Per jenis / Zona Bahaya
+    heatmap_mode = st.selectbox(
+        "Mode Heatmap",
+        ["Semua", "Per Jenis", "Zona Bahaya"],
+        index=0,
+        key="heatmap_mode",
+        help="Pilih apakah menampilkan semua heatmap, per jenis ikan, atau hanya zona bahaya"
+    )
+
     heatmap_toggles = {}
-    for ikan in ikan_types_clean:
-        heatmap_toggles[ikan] = st.checkbox(f"{ikan}", value=True, key=f"heat_{ikan}")
-    
+    if heatmap_mode in ("Semua", "Per Jenis"):
+        for ikan in ikan_types_clean:
+            default_val = True if heatmap_mode == "Semua" else True
+            heatmap_toggles[ikan] = st.checkbox(f"{ikan}", value=default_val, key=f"heat_{ikan}")
+
     # Toggle untuk heatmap zona bahaya
-    show_bahaya_heatmap = st.checkbox("🌊 Zona Bahaya", value=True, key="heat_bahaya")
+    show_bahaya_heatmap = True if heatmap_mode == "Zona Bahaya" else st.checkbox("🌊 Zona Bahaya", value=True, key="heat_bahaya")
     st.markdown('</div>', unsafe_allow_html=True)
 
 with col2:
     st.markdown('<div class="control-card">', unsafe_allow_html=True)
     st.markdown('<div class="control-card-title">📍 Marker Ikan</div>', unsafe_allow_html=True)
-    
-    show_ikan_markers = st.checkbox("Tampilkan Marker Ikan", value=True, key="marker_ikan")
-    
-    # Detail marker per jenis ikan
+    # Dropdown untuk memilih marker ikan: Semua / Per jenis / Tidak ada
+    marker_mode = st.selectbox(
+        "Mode Marker",
+        ["Semua", "Per Jenis", "Tidak ada"],
+        index=0,
+        key="marker_mode",
+        help="Pilih apakah menampilkan semua marker, memilih per jenis ikan, atau tidak menampilkan marker"
+    )
+
+    show_ikan_markers = False
     marker_ikan_toggles = {}
-    if show_ikan_markers:
+    if marker_mode == "Semua":
+        show_ikan_markers = True
+        for ikan in ikan_types_clean:
+            marker_ikan_toggles[ikan] = True
+    elif marker_mode == "Per Jenis":
+        show_ikan_markers = True
         for ikan in ikan_types_clean:
             marker_ikan_toggles[ikan] = st.checkbox(f"• {ikan}", value=True, key=f"marker_{ikan}")
+    else:
+        show_ikan_markers = False
     
     st.markdown('</div>', unsafe_allow_html=True)
 
@@ -450,12 +535,28 @@ with col3:
     st.markdown('<div class="control-card">', unsafe_allow_html=True)
     st.markdown('<div class="control-card-title">🚫 Bahaya & Rute</div>', unsafe_allow_html=True)
     
-    show_bahaya_markers = st.checkbox("Tampilkan Marker Bahaya", value=True, key="marker_bahaya")
-    show_route = st.checkbox("Tampilkan Rute Navigasi", value=True, key="show_route")
+    show_bahaya_markers = st.checkbox("Tampilkan Marker Bahaya", value=st.session_state.get('marker_bahaya', True), key="marker_bahaya")
+    show_route = st.checkbox("Tampilkan Rute Navigasi", value=st.session_state.get('show_route', True), key="show_route")
     
     st.markdown('</div>', unsafe_allow_html=True)
 
 st.markdown("---")
+
+# --- Pilih Titik Deteksi dari daftar (fallback jika klik marker tidak aktif) ---
+try:
+    detect_options = df_filtered[~df_filtered['ikan'].str.contains('Zona Bahaya', case=False, na=False)][['ikan','lat','lon','skor']].copy()
+    detect_options['label'] = detect_options.apply(lambda r: f"{r['ikan']} — {r['lat']:.4f}, {r['lon']:.4f} — skor {r['skor']:.4f}", axis=1)
+    detect_map = dict(zip(detect_options['label'].tolist(), detect_options[['lat','lon']].values.tolist()))
+    sel_label = st.sidebar.selectbox('Pilih Titik Deteksi (daftar)', options=['-- Tidak memilih --'] + detect_options['label'].tolist())
+    if sel_label and sel_label != '-- Tidak memilih --':
+        if st.sidebar.button('➡️ Pilih Titik Ini dari Daftar'):
+            lat, lon = detect_map[sel_label]
+            st.session_state['pending_target'] = (float(lat), float(lon))
+            st.session_state['show_route'] = True
+            st.sidebar.success('➡️ Tujuan otomatis diisi dari daftar')
+            st.experimental_rerun()
+except Exception:
+    pass
 
 # === GENERATE MAP ===
 # Set basemap
@@ -467,26 +568,32 @@ else:
     attr = "&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
 
 # Inisialisasi peta
-map_center = [(start_lat + end_lat) / 2, (start_lon + end_lon) / 2]
+# Compute safe map center using coerced floats to avoid NoneType errors
+_map_s_lat = _safe_float(st.session_state.get('start_lat', _start_val), _start_val)
+_map_s_lon = _safe_float(st.session_state.get('start_lon', _lon_val), _lon_val)
+_map_e_lat = _safe_float(st.session_state.get('end_lat', _end_val), _end_val)
+_map_e_lon = _safe_float(st.session_state.get('end_lon', _end_lon_val), _end_lon_val)
+map_center = [(_map_s_lat + _map_e_lat) / 2, (_map_s_lon + _map_e_lon) / 2]
 m = folium.Map(location=map_center, zoom_start=8, tiles=tiles_url, attr=attr)
 
 # === HeatMap per jenis ikan ===
-for ikan in ikan_types_clean:
-    if heatmap_toggles[ikan]:
-        subdf = df_filtered[df_filtered['ikan'] == ikan]
-        heat_data = [
-            [row['lat'], row['lon'], row['skor']]
-            for _, row in subdf.iterrows()
-        ]
-        if heat_data:
-            HeatMap(
-                heat_data,
-                min_opacity=0.1,
-                max_zoom=9,
-                radius=12,
-                blur=15,
-                gradient={0.1: "blue", 0.4: "lime", 0.7: "orange", 1: "red"}
-            ).add_to(m)
+if heatmap_mode in ("Semua", "Per Jenis"):
+    for ikan in ikan_types_clean:
+        if heatmap_toggles.get(ikan, False):
+            subdf = df_filtered[df_filtered['ikan'] == ikan]
+            heat_data = [
+                [row['lat'], row['lon'], row['skor']]
+                for _, row in subdf.iterrows()
+            ]
+            if heat_data:
+                HeatMap(
+                    heat_data,
+                    min_opacity=0.1,
+                    max_zoom=9,
+                    radius=12,
+                    blur=15,
+                    gradient={0.1: "blue", 0.4: "lime", 0.7: "orange", 1: "red"}
+                ).add_to(m)
 
 # === HeatMap zona bahaya ===
 if show_bahaya_heatmap:
@@ -544,39 +651,89 @@ if show_bahaya_markers:
 # === Marker Posisi Awal (SELALU TAMPIL jika GPS terdeteksi atau koordinat diinput) ===
 # Tambahkan marker posisi awal dengan icon khusus untuk GPS
 if st.session_state.gps_detected:
+    _disp_s_lat = _safe_float(st.session_state.get('start_lat', start_lat), start_lat)
+    _disp_s_lon = _safe_float(st.session_state.get('start_lon', start_lon), start_lon)
     folium.Marker(
-        [start_lat, start_lon], 
-        popup=f"📍 <b>Posisi Anda (GPS)</b><br>Lat: {start_lat:.6f}<br>Lon: {start_lon:.6f}", 
+        [_disp_s_lat, _disp_s_lon], 
+        popup=f"📍 <b>Posisi Anda (GPS)</b><br>Lat: {_disp_s_lat:.6f}<br>Lon: {_disp_s_lon:.6f}", 
         icon=folium.Icon(color="green", icon="record", prefix='fa'),
         tooltip="Posisi Anda Saat Ini"
     ).add_to(m)
 else:
+    _disp_s_lat = _safe_float(st.session_state.get('start_lat', start_lat), start_lat)
+    _disp_s_lon = _safe_float(st.session_state.get('start_lon', start_lon), start_lon)
     folium.Marker(
-        [start_lat, start_lon], 
-        popup=f"📍 <b>Posisi Awal (Manual)</b><br>Lat: {start_lat:.6f}<br>Lon: {start_lon:.6f}", 
+        [_disp_s_lat, _disp_s_lon], 
+        popup=f"📍 <b>Posisi Awal (Manual)</b><br>Lat: {_disp_s_lat:.6f}<br>Lon: {_disp_s_lon:.6f}", 
         icon=folium.Icon(color="lightgreen", icon="map-marker", prefix='fa'),
         tooltip="Posisi Awal"
     ).add_to(m)
 
-# === Gambar garis rute ===
+# === Gambar garis rute (guarded) ===
+try:
+    _start_lat = _safe_float(st.session_state.get('start_lat', start_lat), start_lat)
+    _start_lon = _safe_float(st.session_state.get('start_lon', start_lon), start_lon)
+    _end_lat = _safe_float(st.session_state.get('end_lat', end_lat), end_lat)
+    _end_lon = _safe_float(st.session_state.get('end_lon', end_lon), end_lon)
+except Exception:
+    _start_lat, _start_lon, _end_lat, _end_lon = start_lat, start_lon, end_lat, end_lon
+
 if show_route:
-    folium.Marker(
-        [end_lat, end_lon], 
-        popup=f"🎯 <b>Titik Tujuan</b><br>Lat: {end_lat:.6f}<br>Lon: {end_lon:.6f}", 
-        icon=folium.Icon(color="blue", icon="flag"),
-        tooltip="Tujuan"
-    ).add_to(m)
-    folium.PolyLine(
-        locations=[[start_lat, start_lon], [end_lat, end_lon]],
-        color="cyan",
-        weight=4,
-        opacity=0.8,
-        dash_array="10",
-        popup=f"Rute: {((end_lat-start_lat)**2 + (end_lon-start_lon)**2)**0.5 * 111:.1f} km"
-    ).add_to(m)
+    # Only draw route if we have valid numeric coordinates
+    if all(map(lambda x: isinstance(x, float), [_start_lat, _start_lon, _end_lat, _end_lon])):
+        folium.Marker(
+            [_end_lat, _end_lon], 
+            popup=f"🎯 <b>Titik Tujuan</b><br>Lat: {_end_lat:.6f}<br>Lon: {_end_lon:.6f}", 
+            icon=folium.Icon(color="blue", icon="flag"),
+            tooltip="Tujuan"
+        ).add_to(m)
+        folium.PolyLine(
+            locations=[[_start_lat, _start_lon], [_end_lat, _end_lon]],
+            color="cyan",
+            weight=4,
+            opacity=0.8,
+            dash_array="10",
+            popup=f"Rute: {((_end_lat-_start_lat)**2 + (_end_lon-_start_lon)**2)**0.5 * 111:.1f} km"
+        ).add_to(m)
 
 # Tampilkan peta
-st_data = st_folium(m, width=1200, height=600, returned_objects=["all_drawings"])
+st_data = st_folium(m, width=1200, height=600, returned_objects=["last_clicked", "all_drawings"])
+
+# Tangani klik pada peta: jika ada titik diklik, tampilkan tombol untuk menavigasi ke titik tersebut
+clicked = None
+if isinstance(st_data, dict):
+    clicked = st_data.get('last_clicked')
+
+if clicked:
+    try:
+        lat = float(clicked.get('lat'))
+        lon = float(clicked.get('lng') or clicked.get('lon') or clicked.get('lng') )
+        st.markdown(f"**Koordinat terpilih:** {lat:.6f}, {lon:.6f}")
+        # If auto-fill is enabled, immediately set pending target and rerun
+        if st.session_state.get('auto_fill_on_click', True):
+            st.session_state['pending_target'] = (lat, lon)
+            if st.session_state.get('start_lat') is None and st.session_state.get('gps_lat') is not None:
+                st.session_state['start_lat'] = st.session_state.get('gps_lat')
+            if st.session_state.get('start_lon') is None and st.session_state.get('gps_lon') is not None:
+                st.session_state['start_lon'] = st.session_state.get('gps_lon')
+            st.session_state['show_route'] = True
+            st.session_state['route_just_set'] = True
+            st.experimental_rerun()
+        else:
+            if st.button("➡️ Menuju Titik Ini"):
+                # update tujuan dan aktifkan rute
+                # set pending target so sidebar picks it up immediately
+                st.session_state['pending_target'] = (lat, lon)
+                # ensure start coords exist (use GPS if available)
+                if st.session_state.get('start_lat') is None and st.session_state.get('gps_lat') is not None:
+                    st.session_state['start_lat'] = st.session_state.get('gps_lat')
+                if st.session_state.get('start_lon') is None and st.session_state.get('gps_lon') is not None:
+                    st.session_state['start_lon'] = st.session_state.get('gps_lon')
+                st.session_state['show_route'] = True
+                st.session_state['route_just_set'] = True
+                st.experimental_rerun()
+    except Exception:
+        pass
 
 # === INFO PANEL ===
 st.markdown("---")
@@ -586,23 +743,27 @@ col_info1, col_info2 = st.columns(2)
 
 with col_info1:
     gps_status = "GPS Aktif 🟢" if st.session_state.gps_detected else "Manual 🔵"
-    st.markdown(f"""
-    <div class="info-box">
-        <h4 style="margin-top: 0; color: #0e4194;">📍 Koordinat ({gps_status})</h4>
-        <p style="margin: 0.5rem 0;"><strong>Posisi Awal:</strong> {start_lat:.6f}, {start_lon:.6f}</p>
-        <p style="margin: 0.5rem 0;"><strong>Tujuan:</strong> {end_lat:.6f}, {end_lon:.6f}</p>
-        <p style="margin: 0.5rem 0;"><strong>Jarak Estimasi:</strong> ≈ {((end_lat-start_lat)**2 + (end_lon-start_lon)**2)**0.5 * 111:.1f} km</p>
-    </div>
-    """, unsafe_allow_html=True)
+# === MAPPING CSV FILES (RELATIVE PATH) ===
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# Naik 1 level dari pages/ ke streamlit/
+PROJECT_ROOT = os.path.dirname(BASE_DIR)
+# CSV ada di dalam streamlit/csv
+csv_files = {
+    1: os.path.join(PROJECT_ROOT, "csv", "fish_potential_variant_1.csv"),
+    2: os.path.join(PROJECT_ROOT, "csv", "fish_potential_variant_2.csv"), 
+    3: os.path.join(PROJECT_ROOT, "csv", "fish_potential_variant_3.csv"),
+    4: os.path.join(PROJECT_ROOT, "csv", "fish_potential_variant_4.csv")
+}
 
-with col_info2:
-    st.markdown('<div class="info-box">', unsafe_allow_html=True)
-    st.markdown('<h4 style="margin-top: 0; color: #0e4194;">📊 Statistik Layer Aktif</h4>', unsafe_allow_html=True)
-    
-    # Hitung layer yang aktif
-    active_heatmaps = sum([1 for v in heatmap_toggles.values() if v]) + (1 if show_bahaya_heatmap else 0)
-    active_markers_ikan = sum([1 for v in marker_ikan_toggles.values() if v]) if show_ikan_markers else 0
-    active_markers_bahaya = 1 if show_bahaya_markers else 0
+# Default: gunakan variant 1
+csv_path = csv_files[1]
+
+# Baca CSV
+try:
+    df = pd.read_csv(csv_path)
+except Exception as e:
+    st.error(f"Gagal membaca file CSV: {e}")
+    st.stop()
     
     col_a, col_b, col_c = st.columns(3)
     with col_a:
