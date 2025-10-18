@@ -18,6 +18,15 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
+# Inject favicon from local sailor.png so browser tab shows the icon on this page
+try:
+    _fav = os.path.join(os.path.dirname(__file__), '..', 'img', 'sailor.png')
+    with open(_fav, 'rb') as _f:
+        _fb = __import__('base64').b64encode(_f.read()).decode()
+    st.markdown(f'<link rel="icon" href="data:image/png;base64,{_fb}" type="image/png"/>', unsafe_allow_html=True)
+except Exception:
+    pass
+
 # === SUPABASE CONFIGURATION (optional) ===
 SUPABASE_URL = "https://kkeiwnrziuisnrloltwh.supabase.co"
 SUPABASE_KEY = "REDACTED_OR_MISSING"
