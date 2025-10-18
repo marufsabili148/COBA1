@@ -12,6 +12,16 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
+# Inject sailor.png as a favicon (base64) so browser tab shows the image across pages
+try:
+    _fav_path = os.path.join(os.path.dirname(__file__), "img", "sailor.png")
+    with open(_fav_path, "rb") as _f:
+        _b64 = base64.b64encode(_f.read()).decode()
+    st.markdown(f'<link rel="icon" href="data:image/png;base64,{_b64}" type="image/png" />', unsafe_allow_html=True)
+except Exception:
+    # if favicon injection fails, continue gracefully
+    pass
+
 # Explicitly set current page for consistent menu indicator
 st.session_state.current_page = 'Beranda'
 
@@ -462,85 +472,47 @@ if selected == "Beranda":
     </div>
     """, unsafe_allow_html=True)
     
-    # Features Section
+    # Features Section (rendered with Streamlit columns for reliability)
     st.markdown('<h2 class="section-header">Features</h2>', unsafe_allow_html=True)
-    
-    st.markdown("""
-    <div class="feature-grid">
-        <div class="feature-box">
-            <span class="feature-icon">🗺</span>
-            <div class="feature-heading">Interactive Mapping</div>
-            <div class="feature-text">
-                Real-time visualization of potential fishing zones using satellite-based oceanographic data
+    fcols = st.columns(3)
+    features = [
+        ("🗺", "Peta Interaktif", "Real-time visualization of potential fishing zones using satellite-based oceanographic data"),
+        ("🤖", "Prediksi AI", "30-day forecasting using Random Forest machine learning with high accuracy (RMSE: 0.002816)"),
+        ("⚠", "Deteksi Bahaya", "Automatic identification of dangerous zones based on wave height and shallow water conditions"),
+        ("🧭", "Navigasi GPS", "Direct navigation guidance to selected potential fishing locations with real-time tracking"),
+        ("🐟", "Multi-Species Support", "Detection for 6 pelagic species: Tongkol, Cakalang, Tenggiri, Teri, Shortfin Scad, Spotted Sardinella"),
+        ("🔄", "Update Otomatis", "Hourly automated processing of new Copernicus satellite data without manual intervention")
+    ]
+    for i, feat in enumerate(features):
+        icon, title, text = feat
+        col = fcols[i % 3]
+        with col:
+            st.markdown(f"""
+            <div style="background: white; border:1px solid #e1e4e8; border-radius:8px; padding:1rem; margin-bottom:0.75rem;">
+                <div style="font-size:1.6rem;">{icon}</div>
+                <div style="font-weight:600; margin-top:0.5rem;">{title}</div>
+                <div style="color:#586069; margin-top:0.5rem;">{text}</div>
             </div>
-        </div>
-        
-        <div class="feature-box">
-            <span class="feature-icon">🤖</span>
-            <div class="feature-heading">AI Prediction</div>
-            <div class="feature-text">
-                30-day forecasting using Random Forest machine learning with high accuracy (RMSE: 0.002816)
-            </div>
-        </div>
-        
-        <div class="feature-box">
-            <span class="feature-icon">⚠</span>
-            <div class="feature-heading">Hazard Detection</div>
-            <div class="feature-text">
-                Automatic identification of dangerous zones based on wave height and shallow water conditions
-            </div>
-        </div>
-        
-        <div class="feature-box">
-            <span class="feature-icon">🧭</span>
-            <div class="feature-heading">GPS Navigation</div>
-            <div class="feature-text">
-                Direct navigation guidance to selected potential fishing locations with real-time tracking
-            </div>
-        </div>
-        
-        <div class="feature-box">
-            <span class="feature-icon">🐟</span>
-            <div class="feature-heading">Multi-Species Support</div>
-            <div class="feature-text">
-                Detection for 6 pelagic species: Tongkol, Cakalang, Tenggiri, Teri, Shortfin Scad, Spotted Sardinella
-            </div>
-        </div>
-        
-        <div class="feature-box">
-            <span class="feature-icon">🔄</span>
-            <div class="feature-heading">Automatic Updates</div>
-            <div class="feature-text">
-                Hourly automated processing of new Copernicus satellite data without manual intervention
-            </div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+            """, unsafe_allow_html=True)
     
     # Useful Links
     st.markdown('<h2 class="section-header">Related Resources</h2>', unsafe_allow_html=True)
-    
-    st.markdown("""
-    <div class="links-grid">
-        <div class="link-card">
-            <div class="link-title">Ministry of Marine Affairs and Fisheries</div>
-            <div class="feature-text">Official fisheries data and regulations</div>
-            <a href="https://kkp.go.id" target="_blank" class="footer-link">Visit Website →</a>
-        </div>
-        
-        <div class="link-card">
-            <div class="link-title">BMKG Maritime Weather</div>
-            <div class="feature-text">Weather forecasts and maritime conditions</div>
-            <a href="https://www.bmkg.go.id" target="_blank" class="footer-link">Visit Website →</a>
-        </div>
-        
-        <div class="link-card">
-            <div class="link-title">Copernicus Marine Service</div>
-            <div class="feature-text">Source of oceanographic satellite data</div>
-            <a href="https://marine.copernicus.eu" target="_blank" class="footer-link">Visit Website →</a>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+    rcols = st.columns(3)
+    resources = [
+        ("Ministry of Marine Affairs and Fisheries", "Official fisheries data and regulations", "https://kkp.go.id"),
+        ("BMKG Maritime Weather", "Weather forecasts and maritime conditions", "https://www.bmkg.go.id"),
+        ("Copernicus Marine Service", "Source of oceanographic satellite data", "https://marine.copernicus.eu")
+    ]
+    for i, res in enumerate(resources):
+        title, text, link = res
+        with rcols[i]:
+            st.markdown(f"""
+            <div style="background:white; border:1px solid #e1e4e8; border-radius:8px; padding:1rem; margin-bottom:0.75rem;">
+                <div style="font-weight:600;">{title}</div>
+                <div style="color:#586069; margin-top:0.5rem;">{text}</div>
+                <a href="{link}" target="_blank" style="color:#0e4194; text-decoration:none; display:inline-block; margin-top:0.5rem;">Visit Website →</a>
+            </div>
+            """, unsafe_allow_html=True)
     
     # Footer
     st.markdown("""
@@ -687,13 +659,7 @@ elif selected == "Tentang":
                 <strong>6 Fish Species</strong><br>
                 Tongkol, Cakalang, Tenggiri, Teri, Shortfin Scad, Spotted Sardinella<br><br>
                 
-                <strong>2 Parameters</strong><br>
-                Sea Surface Temperature, Chlorophyll-a<br><br>
-                
-                <strong>Model Accuracy</strong><br>
-                RMSE: 0.002816<br>
-                MAE: 0.002245
-            </div>
+               
         </div>
         """, unsafe_allow_html=True)
     
@@ -706,7 +672,7 @@ elif selected == "Tentang":
         <div class="feature-box" style="text-align: center;">
             <div class="feature-heading">M. Ma'ruf Sabili Riziq</div>
             <p style="color: #586069; font-family: Inter, sans-serif;">21120123140123</p>
-            <p style="color: #959da5; font-size: clamp(0.8rem, 2vw, 0.9rem); font-family: Inter, sans-serif;">Lead Developer</p>
+            <p style="color: #959da5; font-size: clamp(0.8rem, 2vw, 0.9rem); font-family: Inter, sans-serif;">Teknik Komputer</p>
         </div>
         """, unsafe_allow_html=True)
     
@@ -715,7 +681,7 @@ elif selected == "Tentang":
         <div class="feature-box" style="text-align: center;">
             <div class="feature-heading">Hasna Auliannisa Wahono</div>
             <p style="color: #586069; font-family: Inter, sans-serif;">21120123130078</p>
-            <p style="color: #959da5; font-size: clamp(0.8rem, 2vw, 0.9rem); font-family: Inter, sans-serif;">Data Scientist</p>
+            <p style="color: #959da5; font-size: clamp(0.8rem, 2vw, 0.9rem); font-family: Inter, sans-serif;">Teknik Komputer</p>
         </div>
         """, unsafe_allow_html=True)
     
@@ -724,11 +690,11 @@ elif selected == "Tentang":
         <div class="feature-box" style="text-align: center;">
             <div class="feature-heading">Nimas Ratri Kirana A.</div>
             <p style="color: #586069; font-family: Inter, sans-serif;">26050122120033</p>
-            <p style="color: #959da5; font-size: clamp(0.8rem, 2vw, 0.9rem); font-family: Inter, sans-serif;">UI/UX Designer</p>
+            <p style="color: #959da5; font-size: clamp(0.8rem, 2vw, 0.9rem); font-family: Inter, sans-serif;">Oseanografi</p>
         </div>
         """, unsafe_allow_html=True)
     
-    st.markdown('<h2 class="section-header">Institution</h2>', unsafe_allow_html=True)
+    st.markdown('<h2 class="section-header">Institusi</h2>', unsafe_allow_html=True)
     
     col1, col2 = st.columns(2)
     
@@ -736,21 +702,23 @@ elif selected == "Tentang":
         st.markdown("""
         **Universitas Diponegoro**
         
-        Faculty of Science and Mathematics
+        Fakultas Teknik,
+        Fakultas Perikanan dan Ilmu Kelautan 
         
-        Informatics Study Program
+        Teknik Komputer,
+        Oseanografi
         """)
     
     with col2:
         st.markdown("""
         **GEMASTIK XVIII**
         
-        Category: Software Development
+        Kategori: Pengembangan Perangkat Lunak
         
-        Year: 2025
+        tahun: 2025
         """)
     
-    st.markdown('<h2 class="section-header">References & Data Sources</h2>', unsafe_allow_html=True)
+    st.markdown('<h2 class="section-header">Referensi & Sumber Data</h2>', unsafe_allow_html=True)
     
     st.markdown("""
     - Copernicus Marine Environment Monitoring Service (CMEMS)
