@@ -15,6 +15,15 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
+# Inject favicon from local sailor.png so browser tab shows the icon on this page
+try:
+    _fav = os.path.join(os.path.dirname(__file__), '..', 'img', 'sailor.png')
+    with open(_fav, 'rb') as _f:
+        _fb = __import__('base64').b64encode(_f.read()).decode()
+    st.markdown(f'<link rel="icon" href="data:image/png;base64,{_fb}" type="image/png"/>', unsafe_allow_html=True)
+except Exception:
+    pass
+
 # === CUSTOM CSS - COPERNICUS STYLE (CONSISTENT WITH HOME.PY) ===
 st.markdown("""
 <style>
@@ -331,7 +340,7 @@ if 'end_lat' not in st.session_state:
 if 'end_lon' not in st.session_state:
     st.session_state['end_lon'] = None
 if 'show_route' not in st.session_state:
-    st.session_state['show_route'] = True
+    st.session_state['show_route'] = False
 
 # Helper to coerce floats safely
 def _safe_float(v, fallback):
@@ -398,6 +407,26 @@ if _pending:
     except Exception:
         pass
 
+# Also support a query-param based flow so clicking a marker popup link reliably navigates
+# to this page with ?target_lat=...&target_lon=... which we read and convert into pending_target.
+try:
+    # use the non-experimental API to read query params (returns dict of lists)
+    q = st.query_params
+    if 'target_lat' in q and 'target_lon' in q:
+        try:
+            _qt_lat = float(q.get('target_lat')[0])
+            _qt_lon = float(q.get('target_lon')[0])
+            st.session_state['pending_target'] = (_qt_lat, _qt_lon)
+            st.session_state['show_route'] = True
+            # clear query params so refresh doesn't re-trigger
+            st.experimental_set_query_params()
+            st.experimental_rerun()
+        except Exception:
+            pass
+except Exception:
+    # older Streamlit or restricted env may not support query params - ignore silently
+    pass
+
 start_lat = st.sidebar.number_input(
     "Latitude", 
     value=float(_start_val), 
@@ -452,21 +481,29 @@ with st.sidebar.expander("DEBUG - session_state", expanded=False):
         'start_lon': st.session_state.get('start_lon'),
         'end_lat': st.session_state.get('end_lat'),
         'end_lon': st.session_state.get('end_lon'),
-        'show_route': st.session_state.get('show_route')
+        'show_route': st.session_state.get('show_route'),
+        'pending_target': st.session_state.get('pending_target')
     })
 
-col_btn1, col_btn2 = st.sidebar.columns(2)
+# Larger, easier-to-tap controls for mobile: Refresh and Toggle Sidebar
+col_btn1, col_btn2 = st.sidebar.columns([1,1])
 with col_btn1:
-    if st.button("🔄 Refresh GPS", use_container_width=True):
+    # Larger refresh button
+    if st.button("🔄 Refresh GPS", key="refresh_gps_big", help="Segarkan deteksi GPS", ): 
         st.session_state.gps_detected = False
         st.rerun()
 with col_btn2:
-    if st.button("📍 Gunakan GPS", use_container_width=True):
+    if st.button("📍 Gunakan GPS", key="use_gps_big", help="Gunakan koordinat GPS yang terdeteksi"):
         if st.session_state.gps_detected and st.session_state.gps_lat is not None:
-            # Force update dengan rerun
             st.rerun()
         else:
             st.sidebar.error("GPS belum terdeteksi")
+
+# Sidebar toggle helper: a larger visible control that toggles the sidebar (works by injecting JS)
+st.sidebar.markdown("<div style='text-align:center; margin-top:0.5rem;'>"
+                    "<button onclick=\"document.querySelector('.css-18e3th9').style.display = (document.querySelector('.css-18e3th9').style.display==='none'? 'block':'none')\" "
+                    "style=\"background:#0e4194;color:white;border:none;padding:12px 14px;border-radius:8px;width:100%;font-size:16px;\">"
+                    "Toggle Sidebar</button></div>", unsafe_allow_html=True)
 
 # === MAIN MAP SECTION ===
 st.markdown('<h2 class="section-header">🗺️ Peta Interaktif</h2>', unsafe_allow_html=True)
@@ -474,18 +511,11 @@ st.markdown('<h2 class="section-header">🗺️ Peta Interaktif</h2>', unsafe_al
 # === KONTROL LAYER ===
 st.markdown('<h3 class="section-header" style="font-size: clamp(1.1rem, 3vw, 1.25rem); margin-top: 1rem;">🎛️ Kontrol Layer</h3>', unsafe_allow_html=True)
 
-# Buat kolom untuk toggle controls
-col1, col2, col3 = st.columns(3)
+# Replace the column controls with accordion-style expanders for easier open/close on mobile
+ikan_types = df_filtered['ikan'].unique()
+ikan_types_clean = [ikan for ikan in ikan_types if "Zona Bahaya" not in ikan]
 
-with col1:
-    st.markdown('<div class="control-card">', unsafe_allow_html=True)
-    st.markdown('<div class="control-card-title">🔥 Layer Heatmap</div>', unsafe_allow_html=True)
-    
-    # Toggle untuk heatmap per jenis ikan
-    ikan_types = df_filtered['ikan'].unique()
-    ikan_types_clean = [ikan for ikan in ikan_types if "Zona Bahaya" not in ikan]
-    
-    # Dropdown untuk memilih layer heatmap: Semua / Per jenis / Zona Bahaya
+with st.expander('🔥 Layer Heatmap', expanded=False):
     heatmap_mode = st.selectbox(
         "Mode Heatmap",
         ["Semua", "Per Jenis", "Zona Bahaya"],
@@ -493,21 +523,14 @@ with col1:
         key="heatmap_mode",
         help="Pilih apakah menampilkan semua heatmap, per jenis ikan, atau hanya zona bahaya"
     )
-
     heatmap_toggles = {}
     if heatmap_mode in ("Semua", "Per Jenis"):
         for ikan in ikan_types_clean:
             default_val = True if heatmap_mode == "Semua" else True
             heatmap_toggles[ikan] = st.checkbox(f"{ikan}", value=default_val, key=f"heat_{ikan}")
-
-    # Toggle untuk heatmap zona bahaya
     show_bahaya_heatmap = True if heatmap_mode == "Zona Bahaya" else st.checkbox("🌊 Zona Bahaya", value=True, key="heat_bahaya")
-    st.markdown('</div>', unsafe_allow_html=True)
 
-with col2:
-    st.markdown('<div class="control-card">', unsafe_allow_html=True)
-    st.markdown('<div class="control-card-title">📍 Marker Ikan</div>', unsafe_allow_html=True)
-    # Dropdown untuk memilih marker ikan: Semua / Per jenis / Tidak ada
+with st.expander('📍 Marker Ikan', expanded=False):
     marker_mode = st.selectbox(
         "Mode Marker",
         ["Semua", "Per Jenis", "Tidak ada"],
@@ -515,7 +538,6 @@ with col2:
         key="marker_mode",
         help="Pilih apakah menampilkan semua marker, memilih per jenis ikan, atau tidak menampilkan marker"
     )
-
     show_ikan_markers = False
     marker_ikan_toggles = {}
     if marker_mode == "Semua":
@@ -528,17 +550,10 @@ with col2:
             marker_ikan_toggles[ikan] = st.checkbox(f"• {ikan}", value=True, key=f"marker_{ikan}")
     else:
         show_ikan_markers = False
-    
-    st.markdown('</div>', unsafe_allow_html=True)
 
-with col3:
-    st.markdown('<div class="control-card">', unsafe_allow_html=True)
-    st.markdown('<div class="control-card-title">🚫 Bahaya & Rute</div>', unsafe_allow_html=True)
-    
+with st.expander('🚫 Bahaya & Rute', expanded=False):
     show_bahaya_markers = st.checkbox("Tampilkan Marker Bahaya", value=st.session_state.get('marker_bahaya', True), key="marker_bahaya")
-    show_route = st.checkbox("Tampilkan Rute Navigasi", value=st.session_state.get('show_route', True), key="show_route")
-    
-    st.markdown('</div>', unsafe_allow_html=True)
+    show_route = st.checkbox("Tampilkan Rute Navigasi", value=st.session_state.get('show_route', False), key="show_route")
 
 st.markdown("---")
 
@@ -548,9 +563,13 @@ try:
     detect_options['label'] = detect_options.apply(lambda r: f"{r['ikan']} — {r['lat']:.4f}, {r['lon']:.4f} — skor {r['skor']:.4f}", axis=1)
     detect_map = dict(zip(detect_options['label'].tolist(), detect_options[['lat','lon']].values.tolist()))
     sel_label = st.sidebar.selectbox('Pilih Titik Deteksi (daftar)', options=['-- Tidak memilih --'] + detect_options['label'].tolist())
+    # Auto-apply selection without requiring an extra button. Use a small session_state key
+    # to prevent re-applying the same selection repeatedly across reruns.
     if sel_label and sel_label != '-- Tidak memilih --':
-        if st.sidebar.button('➡️ Pilih Titik Ini dari Daftar'):
+        prev = st.session_state.get('_last_detect_sel')
+        if prev != sel_label:
             lat, lon = detect_map[sel_label]
+            st.session_state['_last_detect_sel'] = sel_label
             st.session_state['pending_target'] = (float(lat), float(lon))
             st.session_state['show_route'] = True
             st.sidebar.success('➡️ Tujuan otomatis diisi dari daftar')
@@ -623,7 +642,8 @@ if show_ikan_markers:
                 <b>Latitude:</b> {row['lat']:.4f}<br>
                 <b>Longitude:</b> {row['lon']:.4f}<br>
                 <b>Skor Potensi:</b> {row['skor']:.4f}<br>
-                <b>Alasan:</b> {row['alasan']}
+                <b>Alasan:</b> {row['alasan']}<br>
+                <a href='?target_lat={row['lat']}&target_lon={row['lon']}' target='_self' style='text-decoration:none;'>➡️ Menuju Titik Ini</a>
                 """
                 folium.Marker(
                     location=[row['lat'], row['lon']],
@@ -640,7 +660,8 @@ if show_bahaya_markers:
         <b>Latitude:</b> {row['lat']:.4f}<br>
         <b>Longitude:</b> {row['lon']:.4f}<br>
         <b>Skor:</b> {row['skor']:.4f}<br>
-        <b>Keterangan:</b> {row['alasan']}
+        <b>Keterangan:</b> {row['alasan']}<br>
+        <a href='?target_lat={row['lat']}&target_lon={row['lon']}' target='_self' style='text-decoration:none;color:red;'>➡️ Menuju Titik Ini</a>
         """
         folium.Marker(
             location=[row['lat'], row['lon']],
